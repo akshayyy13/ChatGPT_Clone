@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #212121;
+  --bg-secondary: #303030;
+  --bg-tertiary: #414141;
+  --bg-scrim: #0d0d0d80;
+  --bg-elevated-primary: #303030;
+  --bg-elevated-secondary: #181818;
+  --bg-status-warning: #4a2206;
+  --bg-status-error: #4d100e;
+  --border-default: #ffffff26;
+  --border-heavy: #fff3;
+  --border-light: #ffffff0d;
+  --border-status-warning: #4a2206;
+  --border-status-error: #4d100e;
+  --text-primary: #fff;
+  --text-secondary: #f3f3f3;
+  --text-tertiary: #afafaf;
+  --text-inverted: #0d0d0d;
+  --text-inverted-static: #fff;
+  --text-accent: #66b5ff;
+  --text-status-warning: #ff9e6c;
+  --text-status-error: #ff8583;
+  --icon-primary: #e8e8e8;
+  --icon-secondary: #cdcdcd;
+  --icon-tertiary: #afafaf;
+  --icon-inverted: #0d0d0d;
+  --icon-inverted-static: #fff;
+  --icon-accent: #66b5ff;
+  --icon-status-warning: #ff9e6c;
+  --icon-status-error: #ff8583;
+  --interactive-bg-primary-default: #fff;
+  --interactive-bg-primary-hover: #fffc;
+  --interactive-bg-primary-press: #ffffffe5;
+  --interactive-bg-primary-inactive: #fff;
+  --interactive-bg-primary-selected: #fff;
+  --interactive-bg-secondary-default: #fff0;
+  --interactive-bg-secondary-hover: #ffffff1a;
+  --interactive-bg-secondary-press: #ffffff0d;
+  --interactive-bg-secondary-inactive: #fff0;
+  --interactive-bg-secondary-selected: #ffffff1a;
+  --interactive-bg-tertiary-default: #212121;
+  --interactive-bg-tertiary-hover: #181818;
+  --interactive-bg-tertiary-press: #0d0d0d;
+  --interactive-bg-tertiary-inactive: #212121;
+  --interactive-bg-tertiary-selected: #212121;
+  --interactive-bg-accent-default: #013566;
+  --interactive-bg-accent-hover: #003f7a;
+  --interactive-bg-accent-muted-hover: #3b4045;
+  --interactive-bg-accent-press: #004f99;
+  --interactive-bg-accent-muted-press: #40484f;
+  --interactive-bg-accent-inactive: #013566;
+  --interactive-bg-danger-primary-default: #e02e2a;
+  --interactive-bg-danger-primary-hover: #fa423e;
+  --interactive-bg-danger-primary-press: #ba2623;
+  --interactive-bg-danger-primary-inactive: #e02e2a;
+  --interactive-bg-danger-secondary-default: #fff0;
+  --interactive-bg-danger-secondary-hover: #fff0;
+  --interactive-bg-danger-secondary-press: #fff0;
+  --interactive-bg-danger-secondary-inactive: #fff0;
+  --interactive-border-focus: #fff;
+  --interactive-border-secondary-default: #ffffff26;
+  --interactive-border-secondary-hover: #ffffff26;
+  --interactive-border-secondary-press: #fff3;
+  --interactive-border-secondary-inactive: #ffffff1a;
+  --interactive-border-tertiary-default: #ffffff1a;
+  --interactive-border-tertiary-hover: #ffffff26;
+  --interactive-border-tertiary-press: #ffffff1a;
+  --interactive-border-tertiary-inactive: #ffffff1a;
+  --interactive-border-danger-secondary-default: #fa423e;
+  --interactive-border-danger-secondary-hover: #ff6764;
+  --interactive-border-danger-secondary-press: #e02e2a;
+  --interactive-border-danger-secondary-inactive: #fa423e;
+  --interactive-label-primary-default: #0d0d0d;
+  --interactive-label-primary-hover: #0d0d0d;
+  --interactive-label-primary-press: #0d0d0d;
+  --interactive-label-primary-inactive: #0d0d0d;
+  --interactive-label-primary-selected: #0d0d0d;
+  --interactive-label-secondary-default: #f3f3f3;
+  --interactive-label-secondary-hover: #ffffffe5;
+  --interactive-label-secondary-press: #fffc;
+  --interactive-label-secondary-inactive: #f3f3f3;
+  --interactive-label-secondary-selected: #f3f3f3;
+  --interactive-label-tertiary-default: #cdcdcd;
+  --interactive-label-tertiary-hover: #cdcdcd;
+  --interactive-label-tertiary-press: #cdcdcd;
+  --interactive-label-tertiary-inactive: #cdcdcd;
+  --interactive-label-tertiary-selected: #cdcdcd;
+  --interactive-label-accent-default: #99ceff;
+  --interactive-label-accent-hover: #99ceff;
+  --interactive-label-accent-press: #99ceff;
+  --interactive-label-accent-inactive: #99ceff;
+  --interactive-label-accent-selected: #99ceff;
+  --interactive-label-danger-primary-default: #fff;
+  --interactive-label-danger-primary-hover: #fff;
+  --interactive-label-danger-primary-press: #fff;
+  --interactive-label-danger-primary-inactive: #fff;
+  --interactive-label-danger-secondary-default: #fa423e;
+  --interactive-label-danger-secondary-hover: #ff6764;
+  --interactive-label-danger-secondary-press: #e02e2a;
+  --interactive-label-danger-secondary-inactive: #fa423e;
+  --interactive-icon-primary-default: #0d0d0d;
+  --interactive-icon-primary-hover: #0d0d0d;
+  --interactive-icon-primary-press: #0d0d0d;
+  --interactive-icon-primary-selected: #0d0d0d;
+  --interactive-icon-primary-inactive: #0d0d0d;
+  --interactive-icon-secondary-default: #f3f3f3;
+  --interactive-icon-secondary-hover: #ffffffe5;
+  --interactive-icon-secondary-press: #fffc;
+  --interactive-icon-secondary-selected: #f3f3f3;
+  --interactive-icon-secondary-inactive: #f3f3f3;
+  --interactive-icon-tertiary-default: #cdcdcd;
+  --interactive-icon-tertiary-hover: #cdcdcd;
+  --interactive-icon-tertiary-press: #cdcdcd;
+  --interactive-icon-tertiary-selected: #cdcdcd;
+  --interactive-icon-tertiary-inactive: #cdcdcd;
+  --interactive-icon-accent-default: #99ceff;
+  --interactive-icon-accent-hover: #99ceff;
+  --interactive-icon-accent-press: #99ceff;
+  --interactive-icon-accent-selected: #99ceff;
+  --interactive-icon-accent-inactive: #99ceff;
+  --interactive-icon-danger-primary-default: #fff;
+  --interactive-icon-danger-primary-hover: #fff;
+  --interactive-icon-danger-primary-press: #fff;
+  --interactive-icon-danger-primary-inactive: #fff;
+  --interactive-icon-danger-secondary-default: #fa423e;
+  --interactive-icon-danger-secondary-hover: #ff6764;
+  --interactive-icon-danger-secondary-press: #e02e2a;
+  --interactive-icon-danger-secondary-inactive: #fa423e;
+  --utility-scrollbar: #fff3;
+}
+
+/* Example: for a dark sidebar background */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: #171717;  /* Set this to your sidebar's background color */
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #292929;  /* Slightly lighter/darker than the background for contrast */
+  border-radius: 8px;
+}
+.textarea-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.textarea-scroll::-webkit-scrollbar-track {
+  background: #303030;  /* Set this to your sidebar's background color */
+}
+.textarea-scroll::-webkit-scrollbar-thumb {
+  background: #414141;  /* Slightly lighter/darker than the background for contrast */
+  border-radius: 8px;
+}
