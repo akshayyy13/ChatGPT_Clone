@@ -5,7 +5,7 @@ export function estimatedTokens(text: string) {
 }
 
 export function modelContextLimit(model: string) {
-  if (model.startsWith("gpt-4o") || model.includes("gemini-2.0")) return 128000;
+  if (model.startsWith("gpt-4o") || model.includes("gemini-1.5")) return 128000;
   if (model.startsWith("gpt-4-turbo")) return 128000;
   return 32000;
 }

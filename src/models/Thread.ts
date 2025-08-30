@@ -10,7 +10,7 @@ const ThreadSchema = new Schema(
       index: true,
     },
     title: { type: String, default: "" }, // chat topic or summary text
-    model: { type: String, default: "gemini-2.0" },
+    model: { type: String, default: "gemini-1.5" },
     settings: { type: Object, default: {} },
   },
   { timestamps: true }

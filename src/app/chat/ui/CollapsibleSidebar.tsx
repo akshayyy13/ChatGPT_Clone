@@ -17,7 +17,11 @@ const fetcher = async (url: string): Promise<{ threads: ThreadListItem[] }> => {
   return res.json();
 };
 
-export default function CollapsibleSidebar() {
+export default function CollapsibleSidebar({
+  onCollapseChange,
+}: {
+  onCollapseChange?: (collapsed: boolean) => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -26,7 +30,7 @@ export default function CollapsibleSidebar() {
     fetcher
   );
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   // Correctly parse /chat/[threadId]
   const currentId = useMemo(() => {
@@ -57,11 +61,12 @@ export default function CollapsibleSidebar() {
   }, []);
 
   const widthCls = collapsed
-    ? "w-12 min-w-[3rem] justify-center"
-    : "w-64 min-w-[16rem] justify-between";
+    ? "w-[3.3rem] min-w-[3rem] justify-center"
+    : "w-64 min-w-[16rem] justify-between bg-[var(--bg-elevated-secondary)]";
   const contentVis = collapsed
     ? "opacity-0 pointer-events-none"
     : "opacity-100";
+  const headerContentVis = collapsed ? " hidden" : " flex px-2";
   // .
   const {
     data: me,
@@ -75,10 +80,13 @@ export default function CollapsibleSidebar() {
         return r.json() as Promise<{ name?: string; image?: string }>;
       })
   );
+  useEffect(() => {
+    onCollapseChange?.(collapsed);
+  }, [collapsed, onCollapseChange]);
 
   return (
     <aside
-      className={`relative border-r border-white/10 bg-[var(--bg-elevated-secondary)] transition-[width] duration-200 ${widthCls} h-screen min-h-0 flex flex-col`}
+      className={`relative border-r border-white/10 duration-200 ${widthCls} h-screen min-h-0 flex flex-col`}
     >
       <div
         className={`flex flex-row ${
@@ -101,8 +109,10 @@ export default function CollapsibleSidebar() {
           }`}
         >
           <div
-            className={`p-2 rounded-lg hover:bg-white/10 ${
-              collapsed ? "cursor-e-resize" : "cursor-w-resize"
+            className={` rounded-lg hover:bg-white/10 ${
+              collapsed
+                ? "cursor-e-resize pl-2 pt-2 pr-2 pb-1"
+                : "cursor-w-resize px-2 pt-2 pr-1 pb-1"
             }`}
           >
             <button
@@ -124,52 +134,38 @@ export default function CollapsibleSidebar() {
           </div>
         </div>
       </div>
+
       {/* Header */}
       <div
-        className={`ml-2 mr-5 flex flex-col pt-4 transition-opacity duration-150 `}
+        className={`${
+          collapsed ? " mx-1 cursor-pointer" : " ml-2 mr-5"
+        } flex flex-col transition-opacity duration-150 mt-1`}
       >
-        <div>
-          <Link
-            href="/chat/new"
-            prefetch={false}
-            className="w-full flex items-center px-3 py-2 flex-row rounded-lg hover:bg-white/10 text-white/90"
-          >
-            <div>
-              <FiEdit />
-            </div>
-            <div>
-              <p className={`px-2 ${contentVis}`}>New chat</p>
-            </div>
-          </Link>
-        </div>
-        <div>
-          <Link
-            href="/chat/search"
-            prefetch={false}
-            className="w-full flex items-center px-3 py-2 flex-row rounded-lg hover:bg-white/10 text-white/90"
-          >
-            <div>
-              <LuSearch />
-            </div>
-            <div>
-              <p className={`px-2 ${contentVis}`}>Search chats</p>
-            </div>
-          </Link>
-        </div>
-        <div>
-          <Link
-            href="/chat/library"
-            prefetch={false}
-            className="w-full flex items-center px-3 py-2 flex-row rounded-lg hover:bg-white/10 text-white/90"
-          >
-            <div>
-              <MdOutlineCollections />
-            </div>
-            <div>
-              <p className={`px-2 ${contentVis}`}>Library</p>
-            </div>
-          </Link>
-        </div>
+        <Link
+          href="/chat/new"
+          prefetch={false}
+          className={`w-full flex items-center px-3 py-2 rounded-lg hover:bg-white/10 text-white/90 transition-colors`}
+        >
+          <FiEdit className="flex-shrink-0" size={18} />
+          <p className={headerContentVis}>New chat</p>
+        </Link>
+        <Link
+          href="/chat/search"
+          prefetch={false}
+          className="w-full flex items-center px-3 py-2 rounded-lg hover:bg-white/10 text-white/90 transition-colors"
+        >
+          <LuSearch className="flex-shrink-0" size={20} />
+          <p className={headerContentVis}>Search Chats</p>
+        </Link>
+        <Link
+          href="/chat/library"
+          prefetch={false}
+          className="w-full flex items-center px-3 py-2 rounded-lg hover:bg-white/10 text-white/90 transition-colors"
+        >
+          <MdOutlineCollections className="flex-shrink-0" size={20} />
+          <p className={headerContentVis}>Library</p>
+        </Link>
+
         <div className="w-full h-[1px] mt-2 bg-[#fff1]"></div>
       </div>
 
@@ -250,7 +246,9 @@ export default function CollapsibleSidebar() {
       {/* Profile */}
       <div className="h-16">
         <div className="w-full h-[1px] mt-2 bg-[#fff1]" />
-        <div className={`flex flex-row items-center gap-2 px-3 cursor-pointer `}>
+        <div
+          className={`flex flex-row items-center gap-2 px-3 cursor-pointer `}
+        >
           <Image
             src={meLoading || !me?.image ? chatgpt_icon : me.image}
             alt={me?.name || "Profile"}

@@ -6,34 +6,69 @@ import { type CoreMessage } from "ai";
 export function toGeminiMessages(
   messages: {
     role: "system" | "user" | "assistant";
-    content: { type: "text"; text: string }[];
+    content: any[];
   }[]
 ): CoreMessage[] {
-  return messages.map((m) => ({
-    role: m.role,
-    content: m.content
-      .map((c) => {
-        return c.text || ""; // Gemini expects plain strings
-      })
-      .join("\n"),
-  }));
+  return messages.map((m) => {
+    // Convert content array to a single string for AI SDK
+    const textParts = m.content
+      .filter((c: any) => c.type === "text")
+      .map((c: any) => c.text || "")
+      .join("\n");
+
+    // For images, add them as separate content in the message
+    const imageParts = m.content.filter((c: any) => c.type === "image");
+
+    // If there are images, handle them differently
+    if (imageParts.length > 0) {
+      const content: any[] = [];
+
+      // Add text content
+      if (textParts.trim()) {
+        content.push({ type: "text", text: textParts });
+      }
+
+      // Add image content
+      imageParts.forEach((img: any) => {
+        if (img.image) {
+          content.push({
+            type: "image",
+            image: img.image,
+            mimeType: img.mimeType || "image/jpeg",
+          });
+        }
+      });
+
+      return {
+        role: m.role,
+        content: content,
+      };
+    }
+
+    // For text-only messages, return as string
+    return {
+      role: m.role,
+      content: textParts || "",
+    };
+  });
 }
 
-// Choose the free-tier safe model
+// Use Gemini 2.0 Flash for better multimodal support
 export function getModel(id?: string) {
   const name = (id || "").toLowerCase();
-  if (name.includes("flash") || name.includes("pro")) {
-    return google("models/gemini-1.5-flash");
+
+  // Force use of Gemini 2.0 Flash for better image support
+  if (name.includes("flash") || name.includes("2.0") || name.includes("pro")) {
+    return google("models/gemini-2.0-flash-exp");
   }
-  if (name.includes("2.5-flash")) {
-    return google("models/gemini-2.5-flash");
-  }
-  return google("models/gemini-1.5-flash");
+
+  // Default to Gemini 2.0 Flash
+  return google("models/gemini-2.0-flash-exp");
 }
 
 export type ChatContent =
   | { type: "text"; text: string }
-  | { type: "image"; url: string }
+  | { type: "image"; url: string; image?: string; mimeType?: string }
   | { type: "file"; url: string; mime?: string; name?: string };
 
 export type Msg = {

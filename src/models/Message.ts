@@ -23,7 +23,8 @@ const MessageSchema = new Schema(
         url: { type: String },
         mime: { type: String },
         name: { type: String },
-        publicId: { type: String }, // e.g., Cloudinary public ID
+        size: { type: Number }, // <--- new optional field
+        publicId: { type: String }, // Cloudinary public ID
       },
     ],
   },
