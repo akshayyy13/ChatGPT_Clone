@@ -129,13 +129,20 @@ export default function ChatView({
     const userMsg: Msg = { role: "user", content: [] };
     if (text) userMsg.content.push({ type: "text", text });
     if (selectedFile) {
-      userMsg.content.push({
-        type: selectedFile.mime.startsWith("image/") ? "image" : "file",
-        text: `File: ${selectedFile.name}`,
-        name: selectedFile.name,
-        url: selectedFile.url,
-        mime: selectedFile.mime,
-      });
+      if (selectedFile.mime.startsWith("image/")) {
+        userMsg.content.push({
+          type: "image",
+          url: selectedFile.url,
+          mime: selectedFile.mime,
+        });
+      } else {
+        userMsg.content.push({
+          type: "file",
+          url: selectedFile.url,
+          mime: selectedFile.mime,
+          name: selectedFile.name,
+        });
+      }
     }
 
     newMessages.push(userMsg);
@@ -147,7 +154,7 @@ export default function ChatView({
 
     // Send to AI with file data
     try {
-      const body: Record<string, any> = {
+      const body: Record<string, string | undefined> = {
         message: text,
         model: "gemini-2.0-flash", // Explicitly use 2.0
         ...(selectedFile && {

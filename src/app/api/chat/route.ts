@@ -3,14 +3,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
 import { Message } from "@/models/Message";
-import { getModel, toGeminiMessages } from "@/app/lib/ai";
+import {
+  getModel,
+  toGeminiMessages,
+  type Msg,
+  type ChatContent,
+} from "@/app/lib/ai";
 import { sliceForContext } from "@/app/lib/context";
 import { getMemories, addMemories } from "@/app/lib/memory";
 import { auth } from "@/app/lib/auth";
 import { streamText } from "ai";
 
+// Type for message documents from database
+type MessageDocument = {
+  _id: string;
+  threadId: string;
+  userId: string;
+  role: "user" | "assistant";
+  content: ChatContent[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic"; // ADD THIS LINE
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -31,13 +47,7 @@ export async function POST(req: NextRequest) {
   if (!thread) return new Response("Thread not found", { status: 404 });
 
   // Prepare user message content - ALWAYS INCLUDE TEXT MESSAGE
-  const userContent: {
-    type: string;
-    text: string;
-    url?: string;
-    mime?: string;
-    name?: string;
-  }[] = [];
+  const userContent: ChatContent[] = [];
 
   // ALWAYS add the text message (this was missing!)
   if (message && message.trim()) {
@@ -49,12 +59,25 @@ export async function POST(req: NextRequest) {
 
   // Add file if provided
   if (fileUrl) {
+    if (fileType?.startsWith("image/")) {
+      userContent.push({
+        type: "image",
+        url: fileUrl,
+        mimeType: fileType,
+      });
+    } else {
+      userContent.push({
+        type: "file",
+        url: fileUrl,
+        mime: fileType,
+        name: fileName,
+      });
+    }
+
+    // Add text description of the file
     userContent.push({
-      type: fileType?.startsWith("image/") ? "image" : "file",
+      type: "text",
       text: fileName ? `File: ${fileName}` : "File attached",
-      url: fileUrl,
-      mime: fileType,
-      name: fileName,
     });
   }
 
@@ -94,22 +117,29 @@ export async function POST(req: NextRequest) {
   const history = await Message.find({ threadId }).sort({ createdAt: 1 });
 
   // Process messages for Gemini
-  const msgs = history.map((m: any) => {
-    const textContent = m.content.filter((c: any) => c.type === "text");
+  const msgs = history.map((m: MessageDocument) => {
+    const textContent = m.content.filter(
+      (c): c is { type: "text"; text: string } => c.type === "text"
+    );
     const fileContent = m.content.filter(
-      (c: any) => c.type === "file" || c.type === "image"
+      (c): c is ChatContent => c.type === "file" || c.type === "image"
     );
 
-    const combinedContent = [...textContent];
+    const combinedContent: ChatContent[] = [...textContent];
 
     // Add file descriptions as text
     if (fileContent.length > 0) {
       const fileDescriptions = fileContent
-        .map((f: any) => {
+        .map((f) => {
           if (f.type === "image") {
-            return `[Image uploaded: ${f.name || "image"} - ${f.url}]`;
+            return `[Image uploaded: ${
+              (f as { name?: string }).name || "image"
+            } - ${f.url}]`;
           }
-          return `[File uploaded: ${f.name || "document"} - ${f.url}]`;
+          if (f.type === "file") {
+            return `[File uploaded: ${f.name || "document"} - ${f.url}]`;
+          }
+          return "";
         })
         .join("\n");
 
@@ -122,25 +152,41 @@ export async function POST(req: NextRequest) {
     };
   });
 
-  const mems = await getMemories(threadId);
-  const memBlock = mems.length ? `Relevant facts:\n- ${mems.join("\n- ")}` : "";
-  const systemPrompt = `You are a helpful AI assistant. When users mention uploaded files or images, acknowledge them and provide helpful responses based on the file information provided.\n${memBlock}`;
+    const mems = await getMemories(threadId);
+    const memBlock = mems.length
+      ? `Relevant facts:\n- ${mems.join("\n- ")}`
+      : "";
+    const systemPrompt = `You are a helpful AI assistant. When users mention uploaded files or images, acknowledge them and provide helpful responses based on the file information provided.\n${memBlock}`;
 
-  const { history: sliced } = sliceForContext(
-    msgs,
-    model || thread.model || "gemini-2.0-flash",
-    systemPrompt
-  );
+    const sliceResult = sliceForContext(
+      msgs,
+      model || thread.model || "gemini-2.0-flash",
+      systemPrompt
+    );
 
-  const final = [
-    {
-      role: "system" as const,
-      content: [{ type: "text", text: systemPrompt }],
-    },
-    ...sliced,
-  ];
+    // Type assertion to fix the role type issue
 
-  const core = toGeminiMessages(final as any);
+    const sliced = sliceResult.history.map((msg) => ({
+      ...msg,
+      role: msg.role as "user" | "assistant" | "system",
+      content: msg.content as ChatContent[], // Keeps ALL content types
+    }));
+
+    const final: Msg[] = [
+      {
+        role: "system" as const,
+        content: [{ type: "text", text: systemPrompt }],
+      },
+      ...sliced.map((msg) => ({
+        ...msg,
+        content: msg.content.filter(
+          (c): c is { type: "text"; text: string } => c.type === "text" && c.text !== undefined
+        ),
+      })),
+    ];
+
+
+  const core = toGeminiMessages(final);
   const selectedModel = getModel(model || thread.model || "gemini-2.0-flash");
 
   try {
