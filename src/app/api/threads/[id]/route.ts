@@ -7,8 +7,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Add await here
+  const { id } = await params;
   console.log("Deleting thread with ID:", id);
+  console.log("Request URL:", req.url);
 
   try {
     await dbConnect();
