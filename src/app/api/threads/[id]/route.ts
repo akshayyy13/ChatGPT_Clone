@@ -5,9 +5,9 @@ import { Thread } from "@/models/Thread";
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // 👈 must be Promise
 ) {
-  const { id } = context.params;
+  const { id } = await params; // 👈 await here
   console.log("Deleting thread with ID:", id);
   console.log("Request URL:", req.url);
 
