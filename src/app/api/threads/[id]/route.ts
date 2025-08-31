@@ -1,16 +1,18 @@
 // app/api/chat/threads/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  console.log("Deleting thread with ID:", params.id); // <-- should print
+  const { id } = await params; // Add await here
+  console.log("Deleting thread with ID:", id);
+
   try {
     await dbConnect();
-    const deleted = await Thread.findByIdAndDelete(params.id);
+    const deleted = await Thread.findByIdAndDelete(id);
     if (!deleted) {
       return NextResponse.json({ error: "Thread not found" }, { status: 404 });
     }
