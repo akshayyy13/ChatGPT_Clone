@@ -107,6 +107,7 @@ export default function ChatView({
       const editIdx = messages.findIndex((m) => m._id === editMsgId);
 
       if (editIdx !== -1) {
+        // Keep only messages BEFORE the edited message (not including it)
         const messagesToKeep = messages.slice(0, editIdx);
         newMessages = [...messagesToKeep];
 
@@ -114,7 +115,11 @@ export default function ChatView({
           await fetch(`/api/messages/deleteFromIndex`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ threadId, fromMessageId: editMsgId }),
+            body: JSON.stringify({
+              threadId,
+              fromMessageId: editMsgId,
+              inclusive: true, // This will delete the edited message and all after it
+            }),
           });
         } catch (err) {
           console.error("Failed to delete old messages from DB:", err);
@@ -205,6 +210,7 @@ export default function ChatView({
       setSending(false);
     }
   }
+
 
   useEffect(() => {
     let active = true;

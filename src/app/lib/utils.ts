@@ -1,18 +1,23 @@
-async function generateSummary(messages: any[]) {
-  const core = toCoreMessages([
+// lib/utils.ts
+import { getModel, toGeminiMessages, type Msg } from "@/app/lib/ai";
+
+async function generateSummary(messages: Msg[]) {
+  const core = toGeminiMessages([
     {
       role: "system",
       content: [{ type: "text", text: "Summarize concisely." }],
     },
-    ...messages.map((m) => ({ role: m.role, content: m.content })),
+    ...messages,
   ]);
 
   const { text } = await (
     await import("ai")
   ).generateText({
-    model: getModel("gemini-1.5"), // or your default
+    model: getModel("gemini-2.0"), // or your default
     messages: core,
   });
 
   return text;
 }
+
+export { generateSummary };

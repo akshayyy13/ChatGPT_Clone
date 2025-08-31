@@ -41,7 +41,7 @@ export async function GET() {
 
   const previewByThread: Record<string, string> = {};
   for (const f of firstMessages as Array<{
-    _id: any;
+    _id: string;
     first: Array<{ type: string; text?: string }>;
   }>) {
     const text =

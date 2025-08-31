@@ -3,6 +3,7 @@ import { auth } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
 import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
+import type { ObjectId } from "mongoose";
 
 export default async function ChatIndex() {
   const session = await auth();
@@ -11,10 +12,10 @@ export default async function ChatIndex() {
   await dbConnect();
 
   // Route to most recent thread if any
-  const existing = await Thread.findOne({ userId: session.user.id })
+  const existing = (await Thread.findOne({ userId: session.user.id })
     .sort({ updatedAt: -1 })
     .select({ _id: 1 })
-    .lean();
+    .lean()) as { _id: ObjectId } | null;
 
   if (existing?._id) {
     redirect(`/chat/${existing._id}`);

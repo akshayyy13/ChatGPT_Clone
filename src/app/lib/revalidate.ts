@@ -1,5 +1,6 @@
 import { Message } from "@/models/Message";
 import { Thread } from "@/models/Thread";
+import type { ChatContent } from "@/app/lib/ai";
 
 export async function revalidateThreadIndex(threadId: string) {
   // Fetch remaining messages
@@ -11,7 +12,7 @@ export async function revalidateThreadIndex(threadId: string) {
   const messages = docs.map((d) => ({
     _id: String(d._id),
     role: d.role as "user" | "assistant",
-    content: d.content as any,
+    content: d.content as ChatContent[],
   }));
 
   // Update thread index if you keep summary / metadata

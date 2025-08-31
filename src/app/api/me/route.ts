@@ -8,7 +8,7 @@ export async function GET() {
     return new Response("Unauthorized", { status: 401 });
   await dbConnect();
 
-  const user = await User.findOne({ email: session.user.email })
+  const user = await User.findOne<{ name?: string; image?: string }>({ email: session.user.email })
     .select({ name: 1, image: 1, _id: 0 })
     .lean();
 

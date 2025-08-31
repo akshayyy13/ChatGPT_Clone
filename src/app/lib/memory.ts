@@ -26,10 +26,11 @@ export async function addMemories(threadId: string, text: string) {
     // Not JSON, assume plain string, do nothing
   }
 
-  await client.add({ namespace: threadId, content: [plainText] });
+  await client.add([{ role: "assistant", content: plainText }], {
+    user_id: threadId,
+  });
+
 }
-
-
 
 // Replace .list() with .get() or .query() as appropriate:
 export async function getMemories(threadId: string) {

@@ -17,7 +17,9 @@ export default async function ThreadPage({ params }: PageProps) {
   const thread = await Thread.findOne({
     _id: threadId,
     userId: session.user.id,
-  }).lean();
+  })
+    .lean()
+    .exec() as { model: string } | null;
   if (!thread) notFound();
 
   return <ChatView threadId={threadId} model={String(thread.model)} />;

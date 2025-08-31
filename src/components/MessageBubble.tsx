@@ -1,5 +1,7 @@
 "use client";
-import Markdown from "@/components/Markdown";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
+
 import type { Msg, TextContent } from "@/app/types";
 import { BiCopy, BiLike, BiDislike, BiTrash } from "react-icons/bi";
 import { GrFormEdit } from "react-icons/gr";
@@ -12,12 +14,12 @@ export default function MessageBubble({
   msg,
   onEdit,
   onCopy,
-  onDelete, // ✅ new
+  onDelete,
 }: {
   msg: Msg;
   onEdit?: () => void;
   onCopy?: () => void;
-  onDelete?: () => void; // ✅ new
+  onDelete?: () => void;
 }) {
   const isUser = msg.role === "user";
   const text =
@@ -39,58 +41,46 @@ export default function MessageBubble({
     }
   };
 
-  const CodeBlock = ({
-    children,
-    className,
-  }: {
-    children: any;
-    className?: string;
-  }) => {
-    const language = className?.replace("language-", "") || "text";
-    const code =
-      typeof children === "string"
-        ? children.trim()
-        : Array.isArray(children)
-        ? children.join("").trim()
-        : String(children || "").trim();
+  const markdownComponents: Components = {
+    pre: ({ children, ...props }) => {
+      const child = children as React.ReactElement<{
+        children?: React.ReactNode;
+        className?: string;
+      }>;
+      const code = child?.props?.children || "";
+      const className = child?.props?.className || "";
 
-    return (
-      <div className="my-4 rounded-lg overflow-hidden bg-[#0d1117] border border-[#30363d]">
-        <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-[#30363d]">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-[#ff5f57]"></div>
-              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
-              <div className="w-3 h-3 rounded-full bg-[#28ca42]"></div>
+
+      return (
+        <div className="my-2">
+          <div className="bg-[#1e1e1e] text-white rounded-md overflow-auto shadow-md">
+            <div className="flex justify-between items-center px-2 py-1 border-b border-gray-700 text-xs font-mono">
+              <span>Code</span>
+              <button
+                onClick={() => navigator.clipboard.writeText(String(code))}
+                className="hover:text-gray-300"
+              >
+                Copy
+              </button>
             </div>
-            <span className="text-[#7d8590] text-sm font-mono ml-2">
-              {language}
-            </span>
+            <pre className={`p-4 font-mono ${className}`} {...props}>
+              <code>{code}</code>
+            </pre>
           </div>
-          <button
-            onClick={() => copyCodeToClipboard(code)}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs text-[#7d8590] hover:text-[#f0f6fc] hover:bg-[#30363d] rounded transition-colors"
-          >
-            <BiCopy size={14} />
-            {copiedCode === code ? "Copied!" : "Copy code"}
-          </button>
         </div>
-        <div className="relative">
-          <pre className="p-4 overflow-x-auto text-sm leading-relaxed">
-            <code className="text-[#f0f6fc] font-mono whitespace-pre">
-              {code}
-            </code>
-          </pre>
-        </div>
-      </div>
-    );
+      );
+    },
+    code: ({ children, className, ...props }) => {
+      if (className?.startsWith("language-")) {
+        return <code {...props}>{children}</code>;
+      }
+      return (
+        <span className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded text-sm font-mono">
+          {String(children)}
+        </span>
+      );
+    },
   };
-
-  const InlineCode = ({ children }: { children: string }) => (
-    <code className="bg-[#6e768166] text-[#f0f6fc] px-1.5 py-0.5 rounded text-sm font-mono border border-[#30363d]">
-      {children}
-    </code>
-  );
 
   return (
     <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -103,48 +93,7 @@ export default function MessageBubble({
         ].join(" ")}
       >
         <div className="w-full break-words">
-          <Markdown
-            components={{
-              pre: ({ children, ...props }) => {
-                const child = children as any;
-                const code = child?.props?.children || "";
-                const className = child?.props?.className || "";
-
-                return (
-                  <div className="my-2">
-                    {/* Terminal-like container */}
-                    <div className="bg-[#1e1e1e] text-white rounded-md overflow-auto shadow-md">
-                      <div className="flex justify-between items-center px-2 py-1 border-b border-gray-700 text-xs font-mono">
-                        <span>Code</span>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(code)}
-                          className="hover:text-gray-300"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                      <pre className={`p-4 font-mono ${className}`} {...props}>
-                        <code>{code}</code>
-                      </pre>
-                    </div>
-                  </div>
-                );
-              },
-              code: ({ children, className, ...props }) => {
-                // Inline code
-                if (className?.startsWith("language-")) {
-                  return <code {...props}>{children}</code>;
-                }
-                return (
-                  <span className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded text-sm font-mono">
-                    {children as string}
-                  </span>
-                );
-              },
-            }}
-          >
-            {text}
-          </Markdown>
+          <ReactMarkdown components={markdownComponents}>{text}</ReactMarkdown>
         </div>
 
         {/* User message actions */}

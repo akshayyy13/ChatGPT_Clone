@@ -19,7 +19,8 @@ declare module "next-auth" {
     user: SessionUser;
   }
 }
-declare module "next-auth/jwt" {
+
+declare module "@auth/core/jwt" {
   interface JWT {
     uid?: string;
   }
@@ -44,8 +45,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!creds?.email || !creds?.password) return null;
         await dbConnect();
         const user = await User.findOne({ email: creds.email });
-        if (!user?.passwordHash) return null; // don’t log in OAuth-only users via credentials
-        const ok = await bcrypt.compare(creds.password, user.passwordHash);
+        if (!user?.passwordHash) return null; // don't log in OAuth-only users via credentials
+        const ok = await bcrypt.compare(
+          creds.password as string,
+          user.passwordHash
+        );
         if (!ok) return null;
         return {
           id: user._id.toString(),
@@ -58,7 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.id) token.uid = user.id;
+      if (user?.id) token.uid = user.id as string;
       return token;
     },
     async session({ session, token }) {
