@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import CollapsibleSidebar from "./ui/CollapsibleSidebar";
 import Image from "next/image";
-import { isModuleNamespaceObject } from "util/types";
+
 import sidebar from "../../asset/images/sidebar.png";
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(true);

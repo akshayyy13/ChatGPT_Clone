@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
 import { Message } from "@/models/Message";
-import { getModel, toCoreMessages } from "@/app/lib/ai";
+import { getModel, toGeminiMessages } from "@/app/lib/ai";
 import { sliceForContext } from "@/app/lib/context";
 import { getMemories, addMemories } from "@/app/lib/memory";
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const threadId = searchParams.get("threadId")!;
   const { message, model } = await req.json();
-
+  const toCoreMessages=toGeminiMessages;
   const thread = await Thread.findById(threadId);
   if (!thread) return new Response("Thread not found", { status: 404 });
 
