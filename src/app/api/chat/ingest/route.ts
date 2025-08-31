@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/db";
 import { Message } from "@/models/Message";
-import pdfParse from "pdf-parse";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -13,13 +12,16 @@ export async function POST(req: NextRequest) {
 
   let text = "";
 
-  // PDF parsing
+  // PDF parsing with dynamic import
   if (file.type === "application/pdf") {
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Dynamically import pdf-parse to avoid build-time issues
+    const { default: pdfParse } = await import("pdf-parse");
     const data = await pdfParse(buffer);
     text = data.text;
   } else {
-    // TXT or simple DOCX (can add more libraries for .docx)
+    // TXT or simple text files
     text = await file.text();
   }
 
