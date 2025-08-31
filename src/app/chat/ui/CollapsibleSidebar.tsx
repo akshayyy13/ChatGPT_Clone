@@ -29,8 +29,7 @@ export default function CollapsibleSidebar({
     "/api/threads",
     fetcher
   );
-
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Correctly parse /chat/[threadId]
   const currentId = useMemo(() => {
@@ -84,6 +83,7 @@ export default function CollapsibleSidebar({
     onCollapseChange?.(collapsed);
   }, [collapsed, onCollapseChange]);
 
+
   return (
     <aside
       className={`relative border-r border-white/10 duration-200 ${widthCls} h-screen min-h-0 flex flex-col`}
@@ -97,10 +97,10 @@ export default function CollapsibleSidebar({
           <Image
             src={chatgpt_icon}
             alt="ChatGPT Icon"
-            width={26} // adjust size
+            width={26}
             height={26}
             // onClick={}
-            className="" // Tailwind: makes it circular
+            className="" 
           />
         </div>
         {/* Collapse/expand button */}
@@ -265,5 +265,6 @@ export default function CollapsibleSidebar({
         </div>
       </div>
     </aside>
+    
   );
 }

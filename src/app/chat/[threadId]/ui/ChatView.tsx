@@ -257,8 +257,8 @@ export default function ChatView({
   return (
     <main className="flex flex-col h-screen">
       {/* Top bar */}
-      <div className="px-2 pt-2 flex justify-between">
-        <button className="flex cursor-pointer p-2 items-center rounded-lg hover:bg-white/10 gap-1.5">
+      <div className="px-2 pt-2 flex justify-end sm:justify-between">
+        <button className="hidden sm:flex cursor-pointer p-2 items-center rounded-lg hover:bg-white/10 gap-1.5">
           <p>ChatGPT</p> <IoIosArrowDown className="opacity-60" />
         </button>
         <div className="flex gap-2">
@@ -397,13 +397,13 @@ export default function ChatView({
             </div>
             {/* File Preview (show when file is selected) */}
             {selectedFile && (
-              <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                <span className="text-sm text-blue-700">
+              <div className="flex items-center gap-2 p-2 mr-2 bg-[var(--bg-background-primary)] rounded-lg border-1 border-[var(--border-heavy)] ">
+                <span className="text-sm text-[var(--text-tertiary)]">
                   📎 {selectedFile.name}
                 </span>
                 <button
                   onClick={() => setSelectedFile(null)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-700 hover:text-red-800 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -466,7 +466,7 @@ export default function ChatView({
         </div>
 
         {/* Footer */}
-        <div className="hidden sm:flex my-2 w-full text-[11px] text-center text-[var(--text-tertiary)]">
+        <div className="hidden sm:flex justify-center my-2 w-full text-[11px] text-center text-[var(--text-tertiary)]">
           <div className="flex justify-center gap-1">
             <p>ChatGPT can make mistakes. Check important info. See </p>
             <Link href="/about" className="underline text-white opacity-85">
