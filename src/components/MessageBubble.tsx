@@ -10,13 +10,13 @@ import Markdown from "./Markdown";
 // Define file content type
 // ✅ UPDATE your FileContent interface
 interface FileContent {
-  type: "file" | "image";  // ✅ Add "image" type
+  type: "file" | "image"; // ✅ Add "image" type
   url?: string;
   mime?: string;
   name?: string;
   size?: number;
   publicId?: string;
-  image?: string;          // ✅ Add for base64 images
+  image?: string; // ✅ Add for base64 images
 }
 
 export default function MessageBubble({
@@ -55,43 +55,61 @@ export default function MessageBubble({
   console.log("Filtered fileContents:", fileContents);
   console.log("============================");
   // File attachment component with proper typing
-const FileAttachment = ({ file }: { file: FileContent }) => {
-  console.log("=== RENDERING FILE ===");
-  console.log("file object:", file);
-  console.log("file.name:", file.name);
-  console.log("file.type:", file.type);
-  console.log("=====================");
+  const FileAttachment = ({ file }: { file: FileContent }) => {
+    console.log("=== RENDERING FILE ===");
+    console.log("file object:", file);
+    console.log("file.name:", file.name);
+    console.log("file.type:", file.type);
+    console.log("=====================");
 
-  const handlePreview = () => {
-    if (file.type === "image") {
-      // For images, open in new tab
-      if (file.url) {
-        window.open(file.url, "_blank");
-      } else if (file.image) {
-        const newWindow = window.open();
-        newWindow?.document.write(
-          `<img src="${file.image}" alt="${file.name}" style="max-width: 100%;">`
+    const handlePreview = () => {
+      if (file.type === "image") {
+        // For images, open in new tab
+        if (file.url) {
+          window.open(file.url, "_blank");
+        } else if (file.image) {
+          const newWindow = window.open();
+          newWindow?.document.write(
+            `<img src="${file.image}" alt="${file.name}" style="max-width: 100%;">`
+          );
+        }
+      } else if (file.url) {
+        window.location.href = file.url;
+      }
+    };
+
+    const getFileIcon = (mime: string | undefined, type: string) => {
+      if (type === "image" || (mime && mime.includes("image"))) {
+        return (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5 text-white"
+            fill="currentColor"
+          >
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+          </svg>
         );
       }
-    } else if (file.url) {
-      window.location.href = file.url;
-    }
-  };
 
-  const getFileIcon = (mime: string | undefined, type: string) => {
-    if (type === "image" || (mime && mime.includes("image"))) {
-      return (
-        <svg
-          viewBox="0 0 24 24"
-          className="h-5 w-5 text-white"
-          fill="currentColor"
-        >
-          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-        </svg>
-      );
-    }
+      if (mime && mime.includes("pdf")) {
+        return (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-5 w-5 text-white"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M11.2598 2.25191C11.8396 2.25191 12.2381 2.24808 12.6201 2.33981L12.8594 2.40719C13.0957 2.48399 13.3228 2.5886 13.5352 2.71871L13.6582 2.79879C13.9416 2.99641 14.1998 3.25938 14.5586 3.61813L15.5488 4.60836L15.833 4.89449C16.0955 5.16136 16.2943 5.38072 16.4482 5.6318L16.5703 5.84957C16.6829 6.07074 16.7691 6.30495 16.8271 6.54684L16.8574 6.69137C16.918 7.0314 16.915 7.39998 16.915 7.90719V13.0839C16.915 13.7728 16.9157 14.3301 16.8789 14.7802C16.8461 15.1808 16.781 15.5417 16.6367 15.8779L16.5703 16.0205C16.3049 16.5413 15.9008 16.9772 15.4053 17.2812L15.1865 17.4033C14.8099 17.5951 14.4041 17.6745 13.9463 17.7119C13.4961 17.7487 12.9391 17.749 12.25 17.749H7.75C7.06092 17.749 6.50395 17.7487 6.05371 17.7119C5.65317 17.6791 5.29227 17.6148 4.95606 17.4707L4.81348 17.4033C4.29235 17.1378 3.85586 16.7341 3.55176 16.2382L3.42969 16.0205C3.23787 15.6439 3.15854 15.2379 3.12109 14.7802C3.08432 14.3301 3.08496 13.7728 3.08496 13.0839V6.91695C3.08496 6.228 3.08433 5.67086 3.12109 5.22066C3.1585 4.76296 3.23797 4.35698 3.42969 3.98043C3.73311 3.38494 4.218 2.90008 4.81348 2.59664C5.19009 2.40484 5.59593 2.32546 6.05371 2.28805C6.50395 2.25126 7.06091 2.25191 7.75 2.25191H11.2598Z"
+            ></path>
+          </svg>
+        );
+      }
 
-    if (mime && mime.includes("pdf")) {
+      // Default file icon
       return (
         <svg
           width="20"
@@ -107,58 +125,54 @@ const FileAttachment = ({ file }: { file: FileContent }) => {
           ></path>
         </svg>
       );
-    }
+    };
 
-    // Default file icon
+    // ✅ Enhanced rendering with image thumbnail for images
     return (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className="h-5 w-5 text-white"
-      >
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M11.2598 2.25191C11.8396 2.25191 12.2381 2.24808 12.6201 2.33981L12.8594 2.40719C13.0957 2.48399 13.3228 2.5886 13.5352 2.71871L13.6582 2.79879C13.9416 2.99641 14.1998 3.25938 14.5586 3.61813L15.5488 4.60836L15.833 4.89449C16.0955 5.16136 16.2943 5.38072 16.4482 5.6318L16.5703 5.84957C16.6829 6.07074 16.7691 6.30495 16.8271 6.54684L16.8574 6.69137C16.918 7.0314 16.915 7.39998 16.915 7.90719V13.0839C16.915 13.7728 16.9157 14.3301 16.8789 14.7802C16.8461 15.1808 16.781 15.5417 16.6367 15.8779L16.5703 16.0205C16.3049 16.5413 15.9008 16.9772 15.4053 17.2812L15.1865 17.4033C14.8099 17.5951 14.4041 17.6745 13.9463 17.7119C13.4961 17.7487 12.9391 17.749 12.25 17.749H7.75C7.06092 17.749 6.50395 17.7487 6.05371 17.7119C5.65317 17.6791 5.29227 17.6148 4.95606 17.4707L4.81348 17.4033C4.29235 17.1378 3.85586 16.7341 3.55176 16.2382L3.42969 16.0205C3.23787 15.6439 3.15854 15.2379 3.12109 14.7802C3.08432 14.3301 3.08496 13.7728 3.08496 13.0839V6.91695C3.08496 6.228 3.08433 5.67086 3.12109 5.22066C3.1585 4.76296 3.23797 4.35698 3.42969 3.98043C3.73311 3.38494 4.218 2.90008 4.81348 2.59664C5.19009 2.40484 5.59593 2.32546 6.05371 2.28805C6.50395 2.25126 7.06091 2.25191 7.75 2.25191H11.2598Z"
-        ></path>
-      </svg>
-    );
-  };
+      <div className="my-2 cursor-pointer" onClick={handlePreview}>
+        <div className="w-full flex justify-end ">
+          <div className="relative flex w-[15rem] lg:w-[20rem]  items-center gap-2 rounded-xl bg-[var(--bg-background-primary)] p-2 shadow-[0_0_0_1px_rgba(255,255,255,0.18)_inset] transition-colors">
+            {/* ✅ Show image thumbnail or file icon */}
+            {file.type === "image" && file.url ? (
+              <div className="max-h-50 w-full rounded-md overflow-hidden bg-gray-200">
+                <Image
+                  src={file.url}
+                  alt={file.name || "Image"}
+                  className=" object-cover"
+                  width={1000}
+                  height={1000}
+                />
+              </div>
+            ) : (
+              <div className="grid h-10 w-10 place-items-center rounded-md bg-[#FA423E]">
+                {getFileIcon(file.mime, file.type)}
+              </div>
+            )}
+            {file.type !== "image"  &&
+            <div className="min-w-0 leading-5">
+              {/* ✅ Display filename with fallback */}
+              <div className="truncate overflow-hidden text-[13px] font-medium text-[var(--text-primary)]">
+                {file.name || `${file.type}`}
+              </div>
 
-  // ✅ Enhanced rendering with image thumbnail for images
-  return (
-    <div className="my-2 cursor-pointer" onClick={handlePreview}>
-      <div className="w-full flex justify-end">
-        <div className="relative flex w-[15rem] lg:w-[20rem] items-center gap-2 rounded-xl bg-[var(--bg-background-primary)] p-2 shadow-[0_0_0_1px_rgba(255,255,255,0.02)_inset] transition-colors">
-          {/* ✅ Show image thumbnail or file icon */}
-          {file.type === "image" && file.url ? (
-            <div className="max-h-50 w-full rounded-md overflow-hidden bg-gray-200">
-              <Image
-                src={file.url}
-                alt={file.name || "Image"}
-                className=" object-cover"
-                width={1000}
-                height={1000}
-              />
-            </div>
-          ) : (
-            <div className="grid h-10 w-10 place-items-center rounded-md bg-[#FA423E]">
-              {getFileIcon(file.mime, file.type)}
-            </div>
-          )}
-
-          
+              {/* ✅ Display file type and size */}
+              <div className="flex overflow-hidden items-center gap-2 font-extralight text-[12px] uppercase tracking-wide text-gray-400">
+                <span>
+                  {file.mime?.split("/")[1] || file.type.toUpperCase()}
+                </span>
+                {file.size && (
+                  <>
+                    <span>•</span>
+                    <span>{(file.size / 1024).toFixed(1)}KB</span>
+                  </>
+                )}
+              </div>
+            </div>}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-
-
-
+    );
+  };
 
   if (isUser && isEditing) {
     return (
@@ -201,7 +215,6 @@ const FileAttachment = ({ file }: { file: FileContent }) => {
           >
             {/* Then render text content */}
             {text && <Markdown>{text}</Markdown>}
-
           </div>
 
           {/* Assistant message actions */}
