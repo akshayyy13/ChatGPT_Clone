@@ -58,59 +58,63 @@ export default function ChatView({
     }
   }
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-     console.log("🔍 FRONTEND DEBUG - File selected:");
-     console.log("- File name:", file.name);
-     console.log("- File type:", file.type);
-     console.log("- File size:", file.size);
-    // ✅ Show preview immediately
-    const localUrl = URL.createObjectURL(file);
-    setSelectedFile({
-      name: file.name,
-      url: localUrl, // Show preview while uploading
-      mime: file.type,
-      size: file.size,
+async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  
+  console.log("🔍 FRONTEND DEBUG - File selected:");
+  console.log("- File name:", file.name);
+  console.log("- File type:", file.type);
+  console.log("- File size:", file.size);
+  console.log("- Thread ID:", threadId); // ← Add this debug log
+  
+  // ✅ Show preview immediately
+  const localUrl = URL.createObjectURL(file);
+  setSelectedFile({
+    name: file.name,
+    url: localUrl,
+    mime: file.type,
+    size: file.size,
+  });
+
+  setUploading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("threadId", threadId); // ← ADD THIS LINE
+    formData.append("createMessage", "false");
+
+    const res = await fetch("/api/chat/upload", {
+      method: "POST",
+      body: formData,
     });
 
-    setUploading(true);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Upload failed");
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("createMessage", "false"); // ✅ Don't create DB message
+    // ✅ Update with permanent URL but NO DB message
+    setSelectedFile({
+      name: data.file.name,
+      url: data.file.url,
+      mime: data.file.mime,
+      size: data.file.size,
+      publicId: data.file.publicId,
+    });
 
-      const res = await fetch("/api/chat/upload", {
-        // ✅ Use existing endpoint
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
-
-      // ✅ Update with permanent URL but NO DB message
-      setSelectedFile({
-        name: data.file.name,
-        url: data.file.url, // Permanent Cloudinary URL
-        mime: data.file.mime,
-        size: data.file.size,
-        publicId: data.file.publicId,
-      });
-
-      URL.revokeObjectURL(localUrl);
-      console.log("✅ File uploaded to Cloudinary (no DB):", data.file.name);
-    } catch (err) {
-      console.error(err);
-      alert("File upload failed");
-      setSelectedFile(null);
-      URL.revokeObjectURL(localUrl);
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
+    URL.revokeObjectURL(localUrl);
+    console.log("✅ File uploaded to Cloudinary (no DB):", data.file.name);
+  } catch (err) {
+    console.error(err);
+    alert("File upload failed");
+    setSelectedFile(null);
+    URL.revokeObjectURL(localUrl);
+  } finally {
+    setUploading(false);
+    e.target.value = "";
   }
+}
+
 
   async function send() {
     const text = input.trim();
