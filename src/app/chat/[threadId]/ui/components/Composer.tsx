@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { IoMdArrowUp } from "react-icons/io";
 import Hover from "@/components/Hover";
+
 interface ComposerProps {
   input: string;
   setInput: (value: string) => void;
@@ -13,7 +14,6 @@ interface ComposerProps {
     size?: number;
     publicId?: string;
   } | null;
-  // ✅ Fix the `any` type
   setSelectedFile: React.Dispatch<
     React.SetStateAction<{
       name: string;
@@ -43,23 +43,49 @@ export default function Composer({
   const rafRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function autosizeTextarea() {
+  // ✅ Move autosizeTextarea to useCallback at top level
+  const autosizeTextarea = useCallback(() => {
     const el = taRef.current;
     if (!el) return;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      el.style.height = "auto";
-      const next = Math.min(el.scrollHeight, 180);
-      el.style.height = `${next}px`;
-    });
-  }
 
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+    rafRef.current = requestAnimationFrame(() => {
+      // Reset height first to allow shrinking
+      el.style.height = "auto";
+
+      // Calculate new height
+      const scrollHeight = el.scrollHeight;
+      const maxHeight = 180;
+
+      // Set height with max constraint
+      const nextHeight = Math.min(scrollHeight, maxHeight);
+      el.style.height = `${nextHeight}px`;
+    });
+  }, []);
+
+  // ✅ Initial resize and cleanup
   useEffect(() => {
     autosizeTextarea();
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, []);
+  }, [autosizeTextarea]);
+
+  // ✅ Handle input changes and call autosize
+  useEffect(() => {
+    autosizeTextarea();
+  }, [input, autosizeTextarea]);
+
+  // ✅ Handle window resize for responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      autosizeTextarea();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [autosizeTextarea]);
 
   const hasText = input.trim().length > 0;
 
@@ -70,7 +96,6 @@ export default function Composer({
         style={{
           background: "var(--bg-elevated-primary)",
           boxShadow: "0 0 0 1px rgba(255,255,255,0.02) inset",
-          // minHeight: "54px",
         }}
       >
         <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-1.5">
@@ -78,7 +103,6 @@ export default function Composer({
             <div className=" px-1">
               <div className="relative isolate  cursor-pointer inline-flex max-w-full items-center gap-2 rounded-[18px] border border-[var(--border-heavy)] bg-[var(--bg-background-primary)] p-2 shadow-[0_0_0_1px_rgba(255,255,255,0.02)_inset] w-[20rem]">
                 <div className="grid h-10 w-10 place-items-center rounded-md bg-[#FA423E]">
-                  {/* ✅ Fix the loading spinner display */}
                   {uploading ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   ) : (
@@ -164,13 +188,13 @@ export default function Composer({
             <div className="flex-1 justify-end ">
               <textarea
                 ref={taRef}
-                className="w-full bg-transparent outline-none border-0 text-base text-[15px] resize-none leading-6 placeholder:text-gray-400 placeholder:text-left max-h-[180px] overflow-y-auto textarea-scroll"
+                className="w-full bg-transparent outline-none border-0 text-base text-[15px] resize-none leading-6 placeholder:text-gray-400 placeholder:text-left max-h-[180px] min-h-[24px] overflow-y-auto textarea-scroll"
                 placeholder="Ask anything"
                 rows={1}
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
-                  autosizeTextarea();
+                  // ✅ Remove the direct call - it's handled by useEffect
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -178,7 +202,10 @@ export default function Composer({
                     onSend();
                   }
                 }}
-                style={{ overflowAnchor: "none" }}
+                style={{
+                  overflowAnchor: "none",
+                  height: "auto", // ✅ Add initial height
+                }}
               />
             </div>
 
