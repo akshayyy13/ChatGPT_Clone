@@ -1,5 +1,5 @@
 // src/app/chat/[threadId]/page.tsx
-import { auth } from "@/app/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
@@ -11,7 +11,7 @@ export default async function ThreadPage({ params }: PageProps) {
   const { threadId } = await params;
 
   const session = await auth();
-  if (!session?.user?.id) redirect("/signin");
+  if (!session?.user?.id) redirect("/auth");
 
   await dbConnect();
   const thread = await Thread.findOne({

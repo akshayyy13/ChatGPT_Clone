@@ -1,17 +1,39 @@
-import { auth } from "@/app/lib/auth";
+// app/api/me/route.ts
+import { auth } from "@/lib/auth";
 import { dbConnect } from "@/app/lib/db";
-import { User } from "@/models/User";
+import { User, IUser } from "@/models/User";
+import { NextResponse } from "next/server";
 
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.email)
-    return new Response("Unauthorized", { status: 401 });
-  await dbConnect();
+export const GET = auth(async function GET(req) {
+  try {
+    console.log("🔍 API /me - Auth exists:", !!req.auth);
+    console.log("🔍 API /me - User email:", req.auth?.user?.email);
 
-  const user = await User.findOne<{ name?: string; image?: string }>({ email: session.user.email })
-    .select({ name: 1, image: 1, _id: 0 })
-    .lean();
+    if (!req.auth?.user?.email) {
+      console.log("❌ No auth or email found in /api/me");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  if (!user) return new Response("Not found", { status: 404 });
-  return Response.json({ name: user.name || "", image: user.image || "" });
-}
+    await dbConnect();
+    const user = (await User.findOne({ email: req.auth.user.email })
+      .select({ name: 1, image: 1, _id: 0 })
+      .lean()) as Pick<IUser, "name" | "image"> | null;
+
+    if (!user) {
+      console.log("❌ User not found in database:", req.auth.user.email);
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    console.log("✅ /api/me success for:", req.auth.user.email);
+    return NextResponse.json({
+      name: user.name || "",
+      image: user.image || "",
+    });
+  } catch (error) {
+    console.error("🚨 API /me error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+});

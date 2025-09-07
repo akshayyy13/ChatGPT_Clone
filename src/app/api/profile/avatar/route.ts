@@ -1,6 +1,6 @@
 // src/app/api/profile/avatar/route.ts
 import { NextRequest } from "next/server";
-import { auth } from "@/app/lib/auth";
+import { auth } from "@/lib/auth";
 import { dbConnect } from "@/app/lib/db";
 import { User } from "@/models/User";
 

@@ -2,7 +2,12 @@
 import "./globals.css";
 import Providers from "./providers";
 
-export const metadata = { title: "ChatGPT" };
+export const metadata = {
+  title: "ChatGPT",
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -11,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
+      <body className=" h-[100vh]"
         style={{
           background: "var(--bg-primary)",
           color: "var(--text-primary)",

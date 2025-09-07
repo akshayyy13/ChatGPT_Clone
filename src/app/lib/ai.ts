@@ -83,11 +83,11 @@ export function toGeminiMessages(messages: Msg[]): CoreMessage[] {
 export function getModel(id?: string) {
   const name = (id || "").toLowerCase();
 
-  // Force use of Gemini 2.0 Flash for better image support
+  // Force use of Gemini 2.0 Flash-exp for better image support
   if (name.includes("flash") || name.includes("2.0") || name.includes("pro")) {
-    return google("models/gemini-2.0-flash-exp");
+    return google("models/gemini-2.5-flash");
   }
 
-  // Default to Gemini 2.0 Flash
-  return google("models/gemini-2.0-flash-exp");
+  // Default to Gemini 2.0 Flash-exp
+  return google("models/gemini-2.5-flash");
 }

@@ -4,11 +4,11 @@ import { useTheme } from "./theme-provider";
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   return (
-    <div className="inline-flex items-center gap-1 bg-white/10 dark:bg-white/10 rounded-full p-1">
+    <div className="inline-flex items-center gap-1 bg-[#f9f9f9]/10 dark:bg-[#f9f9f9]/10 rounded-full p-1">
       <button
         onClick={() => setTheme("light")}
         className={`px-3 py-1.5 rounded-full text-sm ${
-          theme === "light" ? "bg-white text-black" : "hover:bg-white/15"
+          theme === "light" ? "bg-[#f9f9f9] text-black" : "hover:bg-[#f9f9f9]/15"
         }`}
       >
         Light
@@ -16,7 +16,7 @@ export default function ThemeToggle() {
       <button
         onClick={() => setTheme("dark")}
         className={`px-3 py-1.5 rounded-full text-sm ${
-          theme === "dark" ? "bg-white text-black" : "hover:bg-white/15"
+          theme === "dark" ? "bg-[#f9f9f9] text-black" : "hover:bg-[#f9f9f9]/15"
         }`}
       >
         Dark
@@ -24,7 +24,7 @@ export default function ThemeToggle() {
       <button
         onClick={() => setTheme("system")}
         className={`px-3 py-1.5 rounded-full text-sm ${
-          theme === "system" ? "bg-white text-black" : "hover:bg-white/15"
+          theme === "system" ? "bg-[#f9f9f9] text-black" : "hover:bg-[#f9f9f9]/15"
         }`}
       >
         System

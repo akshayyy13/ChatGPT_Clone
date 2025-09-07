@@ -1,4 +1,4 @@
-import { auth } from "@/app/lib/auth";
+import { auth } from "@/lib/auth";
 import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
 import { Message } from "@/models/Message";

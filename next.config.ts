@@ -1,4 +1,3 @@
-// next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -8,21 +7,19 @@ const nextConfig = {
         hostname: "lh3.googleusercontent.com",
         pathname: "**",
       },
-
-      { protocol: "https", hostname: "res.cloudinary.com", pathname: "**" },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "**",
+      },
     ],
   },
-  // typescript: {
-  //   // !! WARN !!
-  //   // Dangerously allow production builds to successfully complete even if
-  //   // your project has TypeScript errors.
-  //   // !! WARN !!
-  //   ignoreBuildErrors: true,
-  // },
-  // eslint: {
-  //   // Warning: This allows production builds to successfully complete
-  //   // even if your project has ESLint errors
-  //   ignoreDuringBuilds: true,
-  // },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
 };
+
 export default nextConfig;

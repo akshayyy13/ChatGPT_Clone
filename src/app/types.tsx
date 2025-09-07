@@ -11,9 +11,11 @@ export type ImageContent = {
 
 export type FileContent = {
   type: "file";
-  url: string;
+  url?: string;
   mime?: string;
   name?: string;
+  size?: number;
+  publicId?: string; // ✅ Add this line
 };
 
 export type Content = TextContent | ImageContent | FileContent;

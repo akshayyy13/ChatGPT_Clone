@@ -28,7 +28,7 @@ export default function Uploader({
     setLoading(false);
   }
   return (
-    <label className="text-sm bg-white/5 px-2 py-1 rounded cursor-pointer">
+    <label className="text-sm bg-[#f9f9f9]/5 px-2 py-1 rounded cursor-pointer">
       {loading ? "Uploading…" : "Attach"}
       <input type="file" className="hidden" onChange={onChange} />
     </label>

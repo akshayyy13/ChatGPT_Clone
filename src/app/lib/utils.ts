@@ -13,7 +13,7 @@ async function generateSummary(messages: Msg[]) {
   const { text } = await (
     await import("ai")
   ).generateText({
-    model: getModel("gemini-2.0"), // or your default
+    model: getModel("gemini-2.5-flash"), // or your default
     messages: core,
   });
 

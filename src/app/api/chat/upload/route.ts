@@ -3,7 +3,7 @@ import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/db";
 import { Message } from "@/models/Message";
-import { auth } from "@/app/lib/auth";
+import { auth } from "@/lib/auth";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -13,6 +13,7 @@ cloudinary.config({
 
 export async function POST(req: NextRequest) {
   try {
+    
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,19 +23,21 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const threadId = formData.get("threadId") as string | null;
-    // Remove: const userId = formData.get("userId") as string | null;
 
-    if (!file || !threadId) {
-      return NextResponse.json(
-        { error: "File or threadId missing" },
-        { status: 400 }
-      );
+    const createMessage = formData.get("createMessage") !== "false";
+
+    if (!file) {
+      return NextResponse.json({ error: "File missing" }, { status: 400 });
     }
 
-    // Validate ObjectIds
+    if (createMessage && !threadId) {
+      return NextResponse.json({ error: "threadId missing" }, { status: 400 });
+    }
+
     if (
-      !mongoose.Types.ObjectId.isValid(threadId) ||
-      !mongoose.Types.ObjectId.isValid(userId)
+      createMessage &&
+      (!mongoose.Types.ObjectId.isValid(threadId!) ||
+        !mongoose.Types.ObjectId.isValid(userId))
     ) {
       return NextResponse.json(
         { error: "Invalid threadId or userId" },
@@ -53,10 +56,19 @@ export async function POST(req: NextRequest) {
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to Cloudinary
+    // ✅ MANUAL FILENAME CONTROL
+    const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+
+    // Upload to Cloudinary with filename preservation
     const result: UploadApiResponse = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: "auto", folder: "chatgpt" },
+        {
+          resource_type: "auto",
+          folder: "chatgpt",
+          public_id: `${Date.now()}-${fileNameWithoutExt}`, // ✅ Unique + original name
+          use_filename: true, // ✅ Use original filename
+          unique_filename: false, // ✅ Don't add random chars
+        },
         (error, result) => {
           if (error) reject(error);
           else resolve(result as UploadApiResponse);
@@ -65,28 +77,43 @@ export async function POST(req: NextRequest) {
       uploadStream.end(buffer);
     });
 
-    // Connect to DB
-    await dbConnect();
+    // ✅ Conditionally create DB message
+    if (createMessage) {
+      await dbConnect();
 
-    // Create a new Message document with ObjectId conversion
-    const newMessage = await Message.create({
-      threadId: new mongoose.Types.ObjectId(threadId),
-      userId: new mongoose.Types.ObjectId(userId),
-      role: "user", // or get from session/auth
-      content: [
-        {
-          type: "file",
-          text: `Uploaded file: ${file.name}`,
+      const newMessage = await Message.create({
+        threadId: new mongoose.Types.ObjectId(threadId!),
+        userId: new mongoose.Types.ObjectId(userId),
+        role: "user",
+        content: [
+          {
+            type: "file",
+            text: `Uploaded file: ${file.name}`,
+            url: result.secure_url,
+            publicId: result.public_id,
+            mime: file.type,
+            name: file.name, // ✅ Original filename
+            size: file.size,
+          },
+        ],
+      });
+
+      return NextResponse.json({ success: true, message: newMessage });
+    } else {
+      // ✅ Return file info with original filename
+      return NextResponse.json({
+        success: true,
+        file: {
           url: result.secure_url,
           publicId: result.public_id,
-          mime: file.type,
-          name: file.name,
+          fileName: file.name, // ✅ Original filename
+          fileType: file.type, // ✅ Original mime type
+          name: file.name, // ✅ Backup field
+          mime: file.type, // ✅ Backup field
           size: file.size,
         },
-      ],
-    });
-
-    return NextResponse.json({ success: true, message: newMessage });
+      });
+    }
   } catch (err: unknown) {
     console.error("Upload error:", err);
     return NextResponse.json(
