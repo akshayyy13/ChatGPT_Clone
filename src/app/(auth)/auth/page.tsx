@@ -308,7 +308,7 @@ export default function AuthPage() {
                     Email address
                   </span>
                 </div>
-                <div className="relative text-[var(--text-inverted)] font-normal w-full px-4 py-3 pr-12 border border-gray-300 rounded-full focus:outline-none flex items-center">
+                <div className="relative text-[var(--text-inverted)] font-normal w-full px-4 py-3.5 pr-12 border border-gray-300 rounded-full focus:outline-none flex items-center">
                   <span className="truncate max-w-[calc(100%-60px)]">
                     {email}
                   </span>
@@ -473,7 +473,7 @@ export default function AuthPage() {
                     Email address
                   </span>
                 </div>
-                <div className="relative text-[var(--text-inverted)] font-normal w-full px-4 py-3 pr-12 border border-gray-300 rounded-full focus:outline-none flex items-center">
+                <div className="relative text-[var(--text-inverted)] font-normal w-full px-4 py-3.5 pr-12 border border-gray-300 rounded-full focus:outline-none flex items-center">
                   <span className="truncate max-w-[calc(100%-60px)]">
                     {email}
                   </span>
