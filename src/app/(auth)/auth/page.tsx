@@ -1,10 +1,11 @@
 "use client";
-import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react"; // You'll need to install lucide-react
 import { DM_Sans } from "next/font/google";
+import { signIn, getSession } from "next-auth/react";
+
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700"], // add weights you need
@@ -87,33 +88,60 @@ export default function AuthPage() {
   }
 
   // Handle login submission
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setLoginError("");
+ async function handleLogin(e: React.FormEvent) {
+   e.preventDefault();
+   setLoading(true);
+   setLoginError("");
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+   try {
+     const res = await signIn("credentials", {
+       email,
+       password,
+       redirect: false, // Keep false for error handling
+     });
 
-    setLoading(false);
+     console.log("🔍 SignIn response:", res);
 
-    if (res?.ok) {
-      router.push("/chat");
-    } else {
-      // ✅ Show immediate user feedback
-      alert("Login failed: Incorrect password or email not verified.");
+     // ✅ FIXED: Check for errors properly in NextAuth v5
+     if (res?.error) {
+       console.log("❌ Login error:", res.error);
 
-      // ✅ Set error message for UI display
-      setLoginError("Incorrect password. Please try again.");
+       // Display the custom error message from your auth.ts
+       setLoginError(res.error);
+       setLoading(false);
+       return;
+     }
 
-      // ✅ authMode stays as "login" automatically
-      // ✅ Email remains preserved and visible
-      // ✅ User can retry immediately
-    }
-  }
+     // ✅ FIXED: Success case - check session before redirect
+     if (res?.ok) {
+       console.log("✅ Login successful, checking session...");
+
+       // Small delay to ensure session is properly set
+       setTimeout(async () => {
+         const session = await getSession();
+         console.log("🔍 Session after login:", session);
+
+         if (session?.user) {
+           console.log("✅ Session confirmed, redirecting to chat");
+           router.push("/chat");
+         } else {
+           console.log("❌ No session found after successful login");
+           setLoginError("Session error. Please try again.");
+         }
+         setLoading(false);
+       }, 500);
+     } else {
+       console.log("❌ Login failed - unknown error");
+       setLoginError("Login failed. Please try again.");
+       setLoading(false);
+     }
+   } catch (error) {
+     console.error("🚨 Login exception:", error);
+     setLoginError("Login failed. Please try again.");
+     setLoading(false);
+   }
+ }
+
 
   // Handle signup submission
   async function handleSignup(e: React.FormEvent) {
@@ -320,7 +348,7 @@ export default function AuthPage() {
                   </button>
                 </div>
 
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-0">
                   <div className="relative">
                     <div className="relative input-field w-full">
                       <input
@@ -366,19 +394,30 @@ export default function AuthPage() {
 
                   {/* Error message div - with fallback styling */}
                   {loginError && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                      <span className="text-red-600 text-sm font-medium">
-                        {loginError}
+                    <div className="flex items-center text-[12px] text-red-700">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="font-light">
+                        Incorrect email address or password
                       </span>
                     </div>
                   )}
 
-                  <div className="mb-3 flex justify-end">
+                  <div className="my-4 flex justify-start font-light">
                     <button
                       type="button"
-                      className="text-sm text-[var(--text-inverted)] cursor-pointer disabled:opacity-50 transition-opacity hover:opacity-80"
+                      className="text-sm text-[#3e68ff] cursor-pointer disabled:opacity-50 transition-opacity hover:opacity-80"
                     >
-                      Forgot Password
+                      Forgot Password?
                     </button>
                   </div>
 
@@ -391,7 +430,7 @@ export default function AuthPage() {
                         : ""
                     }`}
                   >
-                    {loading ? "Loading..." : "Continue"}
+                    {"Continue"}
                   </button>
                 </form>
 

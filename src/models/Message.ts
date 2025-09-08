@@ -25,6 +25,8 @@ const MessageSchema = new Schema(
         name: { type: String },
         size: { type: Number }, // <--- new optional field
         publicId: { type: String }, // Cloudinary public ID
+        
+
       },
     ],
   },

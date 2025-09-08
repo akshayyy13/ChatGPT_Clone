@@ -21,7 +21,11 @@ export const GET = auth(async function GET(req) {
 
     if (!user) {
       console.log("❌ User not found in database:", req.auth.user.email);
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      // Instead of 404, return a special status that client can handle
+      return NextResponse.json(
+        { error: "User not found", redirect: "/auth" },
+        { status: 404 }
+      );
     }
 
     console.log("✅ /api/me success for:", req.auth.user.email);

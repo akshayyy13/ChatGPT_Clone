@@ -1,3 +1,6 @@
+// next.config.js
+// @ts-check
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -17,9 +20,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
+  // experimental: {
+  //   missingSuspenseWithCSRBailout: false,
+  // },
 };
 
-export default nextConfig;
+module.exports = nextConfig; // ← CommonJS syntax

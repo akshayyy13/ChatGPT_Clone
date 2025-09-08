@@ -36,37 +36,38 @@ export async function sendOTPEmail(email: string, otp: string) {
   });
 
   const mailOptions = {
-    from: `"ChatGPT Clone" <${process.env.FROM_EMAIL}>`,
+    from: `"ChatGPT " <${process.env.FROM_EMAIL}>`,
     to: email,
-    subject: "Your ChatGPT Clone Verification Code",
+    subject: `Your ChatGPT Code is ${otp}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #333; text-align: center; margin-bottom: 30px;">Verify your email address</h2>
-          
-          <p style="color: #666; text-align: center; font-size: 16px; margin-bottom: 30px;">
-            Enter the verification code we just sent to <strong>${email}</strong>
-          </p>
-          
-          <div style="background-color: #f8f9fa; border: 2px dashed #28a745; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;">
-            <h1 style="font-size: 36px; letter-spacing: 8px; margin: 0; color: #28a745; font-family: 'Courier New', monospace;">${otp}</h1>
-          </div>
-          
-          <p style="color: #666; text-align: center; font-size: 14px; margin-bottom: 10px;">
-            This code expires in <strong>2 minutes</strong>.
-          </p>
-          
-          <p style="color: #999; text-align: center; font-size: 12px;">
-            If you didn't request this code, please ignore this email.
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          
-          <p style="color: #999; text-align: center; font-size: 12px;">
-            ChatGPT Clone - Email Verification System
-          </p>
-        </div>
-      </div>
+      <div style=" padding: 2rem">Your ChatGPT Code is ${otp}</div>
+<div style="font-family: Arial, sans-serif;  margin: 0 auto; padding:0rem 6rem; text-align:left;">
+  <h1 style="color: #333; font-size:2.5rem; font-weight:600">OpenAI</h1>
+
+  <p style="color: #666; text-align: left; font-size: 16px; margin-top: 30px;">
+Enter this temporary verification code to continue:</p>
+
+  <div style="background-color: #e8e8e8; border-radius: 8px; padding: 20px; text-align: left; margin: 30px 0;">
+    <h1 style="font-size: 36px; letter-spacing: 4px; margin: 0;  font-family: 'Courier New', monospace;">${otp}</h1>
+  </div>
+
+  <p style="color: #666; text-align: left; font-size: 18px; margin-bottom: 10px;">Please ignore this email if this wasn’t you trying to create a ChatGPT account.</p>
+
+  <p style="color: #999; margin-top:2rem; text-align: left; font-size: 14px;">
+    Best,
+    <br>
+    The ChatGPT team
+  </p>
+
+  <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+    <h2 class=" font-bold">
+      OpenAI
+    </h2>
+    <br>
+  <p style="color: #999; text-align: left; font-size: 12px;">ChatGPT <br>
+  Help center</p>
+</div>
+
     `,
   };
 

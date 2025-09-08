@@ -176,10 +176,6 @@ export async function POST(req: NextRequest) {
 
   // Safely retrieve memories with fallback
   // Enhanced debugging for memory retrieval
-  console.log("🔍 Debug Info:");
-  console.log("ThreadId:", threadId);
-  console.log("UserId:", userId);
-  console.log("Message:", message?.substring(0, 100) + "...");
 
   let mems: string[] = [];
 try {

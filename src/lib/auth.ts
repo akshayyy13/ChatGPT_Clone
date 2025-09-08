@@ -1,9 +1,10 @@
 // src/lib/auth.ts
-import NextAuth from "next-auth";
+
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import { getMongoClient, dbConnect } from "@/app/lib/db";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import { User } from "@/models/User";
 import bcrypt from "bcryptjs";
 
@@ -13,7 +14,13 @@ type SessionUser = {
   email?: string | null;
   image?: string | null;
 };
-
+class InvalidLoginError extends CredentialsSignin {
+  code = "credentials";
+  constructor(message: string) {
+    super(message);
+    this.message = message;
+  }
+}
 declare module "next-auth" {
   interface Session {
     user: SessionUser;
@@ -53,7 +60,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   providers: [
-    // ✅ Keep Google provider even with empty credentials (for future use)
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID || "placeholder",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "placeholder",
@@ -71,7 +77,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!creds?.email || !creds?.password) {
           console.log("❌ Missing credentials");
-          return null;
+          throw new InvalidLoginError("Please provide both email and password");
         }
 
         try {
@@ -80,7 +86,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!user) {
             console.log("❌ User not found:", creds.email);
-            return null;
+            throw new InvalidLoginError("Invalid email or password");
           }
 
           // Special case for verified users (after OTP verification)
@@ -97,7 +103,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Regular password verification
           if (!user?.passwordHash) {
             console.log("❌ No password hash found for:", user.email);
-            return null;
+            throw new InvalidLoginError("Account setup incomplete");
           }
 
           // Check if credentials user has verified email
@@ -106,7 +112,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               "❌ Email not verified for credentials user:",
               user.email
             );
-            return null;
+            throw new InvalidLoginError("Please verify your email first");
           }
 
           const passwordMatch = await bcrypt.compare(
@@ -116,7 +122,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!passwordMatch) {
             console.log("❌ Invalid password for user:", user.email);
-            return null;
+            throw new InvalidLoginError(
+              "Incorrect password. Please try again."
+            );
           }
 
           console.log("✅ Successful login for:", user.email);
@@ -128,7 +136,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           };
         } catch (error) {
           console.error("🚨 Error in authorize function:", error);
-          return null;
+          if (error instanceof InvalidLoginError) {
+            throw error; // Re-throw custom errors
+          }
+          throw new InvalidLoginError("Login failed. Please try again.");
         }
       },
     }),
