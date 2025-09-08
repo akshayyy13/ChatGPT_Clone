@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
 import type { Msg } from "@/app/types";
 import TopBar from "./components/TopBar";
 import MessagesList from "./components/MessagesList";
@@ -20,6 +20,7 @@ export default function ChatView({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [editMsgId, setEditMsgId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{
     name: string;
     url: string;
@@ -34,7 +35,7 @@ export default function ChatView({
   } | null>(null);
 
   const [uploading, setUploading] = useState(false);
-  const router = useRouter();
+
 
   const startInlineEdit = (id: string | null) => setEditMsgId(id);
   const cancelInlineEdit = () => setEditMsgId(null);
@@ -58,70 +59,68 @@ export default function ChatView({
     }
   }
 
-async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  
-  console.log("🔍 FRONTEND DEBUG - File selected:");
-  console.log("- File name:", file.name);
-  console.log("- File type:", file.type);
-  console.log("- File size:", file.size);
-  console.log("- Thread ID:", threadId); // ← Add this debug log
-  
-  // ✅ Show preview immediately
-  const localUrl = URL.createObjectURL(file);
-  setSelectedFile({
-    name: file.name,
-    url: localUrl,
-    mime: file.type,
-    size: file.size,
-  });
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  setUploading(true);
+    console.log("🔍 FRONTEND DEBUG - File selected:");
+    console.log("- File name:", file.name);
+    console.log("- File type:", file.type);
+    console.log("- File size:", file.size);
+    console.log("- Thread ID:", threadId); // ← Add this debug log
 
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("threadId", threadId); // ← ADD THIS LINE
-    formData.append("createMessage", "false");
-
-    const res = await fetch("/api/chat/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Upload failed");
-
-    // ✅ Update with permanent URL but NO DB message
+    // ✅ Show preview immediately
+    const localUrl = URL.createObjectURL(file);
     setSelectedFile({
-      name: data.file.name,
-      url: data.file.url,
-      mime: data.file.mime,
-      size: data.file.size,
-      publicId: data.file.publicId,
+      name: file.name,
+      url: localUrl,
+      mime: file.type,
+      size: file.size,
     });
 
-    URL.revokeObjectURL(localUrl);
-    console.log("✅ File uploaded to Cloudinary (no DB):", data.file.name);
-  } catch (err) {
-    console.error(err);
-    alert("File upload failed");
-    setSelectedFile(null);
-    URL.revokeObjectURL(localUrl);
-  } finally {
-    setUploading(false);
-    e.target.value = "";
-  }
-}
+    setUploading(true);
 
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("threadId", threadId); // ← ADD THIS LINE
+      formData.append("createMessage", "false");
+
+      const res = await fetch("/api/chat/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+
+      // ✅ Update with permanent URL but NO DB message
+      setSelectedFile({
+        name: data.file.name,
+        url: data.file.url,
+        mime: data.file.mime,
+        size: data.file.size,
+        publicId: data.file.publicId,
+      });
+
+      URL.revokeObjectURL(localUrl);
+      console.log("✅ File uploaded to Cloudinary (no DB):", data.file.name);
+    } catch (err) {
+      console.error(err);
+      alert("File upload failed");
+      setSelectedFile(null);
+      URL.revokeObjectURL(localUrl);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
 
   async function send() {
     const text = input.trim();
     if ((!text && !selectedFile) || sending) return;
     setSending(true);
-      console.log("📨 SENDING MESSAGE DATA:");
-      console.log(JSON.stringify(selectedFile, null, 2));
+
     let newMessages: Msg[] = [...messages];
     const isNewChat = messages.length === 0;
 
@@ -187,7 +186,7 @@ async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     setInput("");
     setSelectedFile(null); // ✅ Clear file from composer
     setEditMsgId(null);
-
+    setIsLoading(true);
     try {
       // ✅ Send to chat API with file context
       // In your send function, when you have selectedFile
@@ -261,6 +260,7 @@ async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
       }
     } finally {
       setSending(false);
+      setIsLoading(false);
     }
   }
 
@@ -269,7 +269,7 @@ async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     if (sending || !text) return;
 
     setSending(true);
-
+    
     const editIdx = messages.findIndex((m) => m._id === messageId);
     if (editIdx === -1) {
       setSending(false);
@@ -284,7 +284,6 @@ async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     );
 
     const messagesToKeep = messages.slice(0, editIdx);
-
     try {
       await fetch(`/api/messages/deleteFromIndex`, {
         method: "POST",
@@ -391,6 +390,7 @@ async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
         onCancelEdit={cancelInlineEdit}
         onSaveEdit={saveInlineEdit}
         onCopy={copyToClipboard}
+        isLoading={isLoading}
       />
 
       <Composer

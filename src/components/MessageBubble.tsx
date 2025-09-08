@@ -1,12 +1,11 @@
 "use client";
-import ReactMarkdown from "react-markdown";
-import type { Components } from "react-markdown";
 import type { Msg, TextContent } from "@/app/types";
 import { useState } from "react";
 import InlineEditor from "./InlineEditor";
 import Hover from "@/components/Hover";
 import Image from "next/image";
 import Markdown from "./Markdown";
+import LoadingBubble from "./LoadingBubble";
 // Define file content type
 // ✅ UPDATE your FileContent interface
 interface FileContent {
@@ -18,7 +17,12 @@ interface FileContent {
   publicId?: string;
   image?: string; // ✅ Add for base64 images
 }
-
+interface LoadingMessage {
+  _id: string;
+  role: "assistant";
+  content: [];
+  isLoading?: boolean;
+}
 export default function MessageBubble({
   msg,
   onEdit,
@@ -28,7 +32,7 @@ export default function MessageBubble({
   onCancelEdit,
   onSaveEdit,
 }: {
-  msg: Msg;
+  msg: Msg | LoadingMessage;
   onEdit?: () => void;
   onCopy?: () => void;
   onDelete?: () => void;
@@ -37,6 +41,17 @@ export default function MessageBubble({
   onSaveEdit?: (next: string) => void | Promise<void>;
 }) {
   const isUser = msg.role === "user";
+  const [hovered, setHovered] = useState(false);
+  // ✅ Check if this is a loading message
+  const isLoading = "isLoading" in msg && msg.isLoading;
+
+  // ✅ If it's a loading message, render the loading bubble
+  if (isLoading) {
+    return (
+      <LoadingBubble/>
+    );
+  }
+
   const textContent = msg.content.find((c) => c.type === "text") as
     | TextContent
     | undefined;
@@ -47,20 +62,11 @@ export default function MessageBubble({
 
   const text = textContent?.text ?? "";
 
-  const [hovered, setHovered] = useState(false);
+  
   const iconBtn =
     "inline-flex items-center justify-center p-1.5 rounded-lg hover:bg-[#f9f9f9]/10 transition cursor-pointer text-[var(--text-secondary)] opacity-95";
-  console.log("=== MESSAGE BUBBLE DEBUG ===");
-  console.log("Full message content:", JSON.stringify(msg.content, null, 2));
-  console.log("Filtered fileContents:", fileContents);
-  console.log("============================");
   // File attachment component with proper typing
   const FileAttachment = ({ file }: { file: FileContent }) => {
-    console.log("=== RENDERING FILE ===");
-    console.log("file object:", file);
-    console.log("file.name:", file.name);
-    console.log("file.type:", file.type);
-    console.log("=====================");
 
     const handlePreview = () => {
       if (file.type === "image") {
@@ -148,26 +154,27 @@ export default function MessageBubble({
                 {getFileIcon(file.mime, file.type)}
               </div>
             )}
-            {file.type !== "image"  &&
-            <div className="min-w-0 leading-5">
-              {/* ✅ Display filename with fallback */}
-              <div className="truncate overflow-hidden text-[13px] font-medium text-[var(--text-primary)]">
-                {file.name || `${file.type}`}
-              </div>
+            {file.type !== "image" && (
+              <div className="min-w-0 leading-5">
+                {/* ✅ Display filename with fallback */}
+                <div className="truncate overflow-hidden text-[13px] font-medium text-[var(--text-primary)]">
+                  {file.name || `${file.type}`}
+                </div>
 
-              {/* ✅ Display file type and size */}
-              <div className="flex overflow-hidden items-center gap-2 font-extralight text-[12px] uppercase tracking-wide text-gray-400">
-                <span>
-                  {file.mime?.split("/")[1] || file.type.toUpperCase()}
-                </span>
-                {file.size && (
-                  <>
-                    <span>•</span>
-                    <span>{(file.size / 1024).toFixed(1)}KB</span>
-                  </>
-                )}
+                {/* ✅ Display file type and size */}
+                <div className="flex overflow-hidden items-center gap-2 font-extralight text-[12px] uppercase tracking-wide text-gray-400">
+                  <span>
+                    {file.mime?.split("/")[1] || file.type.toUpperCase()}
+                  </span>
+                  {file.size && (
+                    <>
+                      <span>•</span>
+                      <span>{(file.size / 1024).toFixed(1)}KB</span>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>}
+            )}
           </div>
         </div>
       </div>
