@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react"; // You'll need to install lucide-react
+import { EyeOff } from "lucide-react"; // You'll need to install lucide-react
 import { DM_Sans } from "next/font/google";
 import { signIn, getSession } from "next-auth/react";
 
