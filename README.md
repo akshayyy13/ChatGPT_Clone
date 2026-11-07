@@ -1,8 +1,18 @@
 
 
-# ChatGPT Clone
+# AI Chat Platform
 
-A full‑stack ChatGPT‑style application built with Next.js 14 (App Router), NextAuth, MongoDB (Mongoose), AI SDK (Gemini/OpenAI), Cloudinary for uploads, mem0 memory, email delivery, and SWR for data fetching.
+A full-stack AI chat application built with Next.js 14, TypeScript, MongoDB, and pluggable Gemini/OpenAI models. It combines account authentication, persistent conversation memory, file uploads, and streamed responses.
+
+## Problem
+
+Chat sessions often lose useful context between conversations, and users need a single place to work with multiple AI providers and common file types. This application brings those workflows together with cross-session memory, uploads, and chat management.
+
+## Screenshot
+
+![AI Chat Platform home screen](docs/screenshots/ai-chat-home.png)
+
+[Open the live demo](https://chat-gpt-clone-phi-lyart.vercel.app/)
 
 ### Key features
 - Authentication with NextAuth (Google OAuth) and MongoDB adapter.  
