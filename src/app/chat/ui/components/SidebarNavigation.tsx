@@ -38,14 +38,12 @@ export default function SidebarNavigation({
       // ✅ Step 2: Refresh sidebar immediately (same as delete)
       refreshSidebar();
 
-      // ✅ Step 3: Navigate directly to the NEW thread (not /chat)
-      window.location.href = `/chat/${newThreadId}`;
+      router.push(`/chat/${newThreadId}`);
 
       console.log("🆕 New chat created:", newThreadId);
     } catch (err) {
       console.error("New chat failed:", err);
-      // Fallback to old behavior if API fails
-      window.location.href = "/chat";
+      router.push("/chat");
     }
   };
 

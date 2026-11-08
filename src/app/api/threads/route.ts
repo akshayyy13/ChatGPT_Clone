@@ -60,14 +60,11 @@ export const GET = auth(async function GET(req) {
       previewByThread[String(f._id)] = preview || "New chat";
     }
 
-    // Only threads with a preview are returned
     const list: ThreadListItem[] = threads
-      .map((t) => {
-        const p = previewByThread[String(t._id)];
-        if (!p) return null;
-        return { _id: String(t._id), preview: p };
-      })
-      .filter(Boolean) as ThreadListItem[];
+      .map((t) => ({
+        _id: String(t._id),
+        preview: previewByThread[String(t._id)] || "New chat",
+      }));
 
     console.log("✅ Threads API success, returning", list.length, "threads");
     return NextResponse.json({ threads: list });
