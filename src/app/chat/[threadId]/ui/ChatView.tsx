@@ -209,7 +209,10 @@ export default function ChatView({
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) throw new Error("Failed to fetch AI response");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to fetch AI response");
+      }
 
       if (res.body) {
         const reader = res.body.getReader();
@@ -250,7 +253,10 @@ export default function ChatView({
           _id: `temp-${Date.now() + 2}-${Math.random()}`,
           role: "assistant",
           content: [
-            { type: "text", text: `Mock reply: ${text || "File uploaded"}` },
+            {
+              type: "text",
+              text: error instanceof Error ? `⚠️ ${error.message}` : "⚠️ The assistant could not reply. Please try again.",
+            },
           ],
         },
       ]);

@@ -4,10 +4,9 @@ import { dbConnect } from "@/app/lib/db";
 import { Thread } from "@/models/Thread";
 import { Message } from "@/models/Message";
 
-import { getModel, type ChatContent } from "@/app/lib/ai";
+import type { ChatContent } from "@/app/lib/ai";
 import { getMemories, addMemories } from "@/app/lib/memory";
 import { auth } from "@/lib/auth";
-import { streamText } from "ai";
 import type { CoreMessage } from "ai";
 
 // Type for message documents from database
@@ -31,6 +30,9 @@ interface MessageContent {
 }
 
 type MessageContentType = string | MessageContent | MessageContent[];
+type GeminiInteractionContent =
+  | { type: "text"; text: string }
+  | { type: "image"; mime_type: string; data: string };
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -187,8 +189,6 @@ try {
   console.error("⚠️ Memory retrieval failed:", memoryError);
   console.error("Error details:", memoryError);
 }
-
-const selectedModel = getModel(model || thread.model || "gemini-2.5-flash");
 
 try {
   // ✅ USE PROPER AI SDK MESSAGE TYPE
@@ -362,16 +362,73 @@ try {
     hasMemoryInjection: mems.length > 0,
   });
 
-  // ✅ PROPER AI SDK CALL WITH CORRECT MESSAGE TYPE
-  const result = await streamText({
-    model: selectedModel,
-    messages: conversationMessages, // ✅ Now properly typed as CoreMessage[]
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "Gemini is not configured. Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY." },
+      { status: 503 }
+    );
+  }
+
+  const interactionInput = conversationMessages.map((msg: CoreMessage) => {
+    const content: GeminiInteractionContent[] = [];
+    if (typeof msg.content === "string") {
+      content.push({ type: "text", text: msg.content });
+    } else {
+      for (const part of msg.content) {
+        if (part.type === "text") {
+          content.push({ type: "text", text: part.text });
+        } else if (part.type === "image" && typeof part.image === "string") {
+          const match = part.image.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            content.push({
+              type: "image",
+              mime_type: match[1],
+              data: match[2],
+            });
+          }
+        }
+      }
+    }
+
+    return {
+      type: msg.role === "assistant" ? "model_output" : "user_input",
+      content,
+    };
   });
 
-  let fullText = "";
-  for await (const chunk of result.textStream) {
-    fullText += chunk;
+  const modelResponse = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/interactions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+        "Api-Revision": "2026-05-20",
+      },
+      body: JSON.stringify({
+        model: "gemini-3.5-flash-lite",
+        input: interactionInput,
+        store: false,
+        system_instruction: "You are a helpful assistant. Respond clearly and directly.",
+        generation_config: { thinking_level: "low", max_output_tokens: 2048 },
+      }),
+      signal: AbortSignal.timeout(60000),
+    }
+  );
+  const interaction = await modelResponse.json();
+  if (!modelResponse.ok) {
+    throw new Error(interaction.error?.message || "Gemini request failed.");
   }
+
+  const fullText = interaction.steps
+    ?.filter((step: { type?: string }) => step.type === "model_output")
+    .flatMap((step: { content?: Array<{ type?: string; text?: string }> }) => step.content || [])
+    .filter((part: { type?: string }) => part.type === "text")
+    .map((part: { text?: string }) => part.text || "")
+    .join("")
+    .trim();
+  if (!fullText) throw new Error("Gemini returned an empty response.");
 
   // Save assistant message
   try {
@@ -406,12 +463,14 @@ try {
     console.error("Error details:", memoryError);
   }
 
-  return result.toTextStreamResponse();
+  return new Response(fullText, {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
 } catch (error) {
   console.error("Gemini API Error:", error);
-  return NextResponse.json({
-    role: "assistant",
-    content: "⚠️ There was an issue connecting to Gemini API. Here's a mock reply so you can keep testing.",
-  });
+  return NextResponse.json(
+    { error: "Gemini could not generate a reply. Please try again." },
+    { status: 502 }
+  );
 }
 }
