@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Hover from "@/components/Hover";
 import { IoIosArrowDown } from "react-icons/io";
+import GuestChat from "./GuestChat";
 export default async function Home() {
   const session = await auth();
   if (session?.user?.id) {
@@ -110,118 +111,8 @@ export default async function Home() {
         </div>
       </section>
       <section className="lg:w-[57%] h-full mx-auto flex flex-col justify-end [@media(min-width:510px)]:justify-between">
-        {/* Input shell */}
         <div className="px-4 [@media(min-width:510px)]:px-4 py-13 md:py-0">
-          <div
-            className="mx-auto w-full rounded-3xl"
-            style={{
-              background: "var(--bg-elevated-primary)",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.02) inset",
-            }}
-          >
-            <div className=" px-[8.5px] py-[7px]">
-              <div className="flex gap-1 flex-col">
-                {/* Input (decorative on landing) */}
-                <div className=" flex flex-row justify-start pl-3">
-                  <div className="flex w-full ">
-                    <div className="relative">
-                      <input
-                        className="w-full bg-transparent outline-none border-0 text-base sm:text-[15px] py-3"
-                        placeholder="Ask Anything"
-                        aria-label="Ask anything"
-                        style={{ color: "var(--text-primary)" }}
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className=" flex flex-row justify-between">
-                  {/* Left pills (hidden on xs) */}
-
-                  <div className="flex items-center gap-2">
-                    <Hover text="Add photos">
-                      <button
-                        className="inline-flex items-center p-2 cursor-pointer rounded-full text-sm transition"
-                        style={{
-                          background: "var(--interactive-bg-secondary-default)",
-                          border:
-                            "1px solid var(--interactive-border-secondary-default)",
-                          color: "var(--interactive-label-secondary-default)",
-                        }}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-label=""
-                          className="icon"
-                        >
-                          <path d="M4.33496 12.5V7.5C4.33496 7.13273 4.63273 6.83496 5 6.83496C5.36727 6.83496 5.66504 7.13273 5.66504 7.5V12.5C5.66504 14.8942 7.60585 16.835 10 16.835C12.3942 16.835 14.335 14.8942 14.335 12.5V5.83301C14.3348 4.35959 13.1404 3.16522 11.667 3.16504C10.1934 3.16504 8.99822 4.35948 8.99805 5.83301V12.5C8.99805 13.0532 9.44679 13.502 10 13.502C10.5532 13.502 11.002 13.0532 11.002 12.5V7.5C11.002 7.13273 11.2997 6.83496 11.667 6.83496C12.0341 6.83514 12.332 7.13284 12.332 7.5V12.5C12.332 13.7877 11.2877 14.832 10 14.832C8.71226 14.832 7.66797 13.7877 7.66797 12.5V5.83301C7.66814 3.62494 9.45888 1.83496 11.667 1.83496C13.875 1.83514 15.6649 3.62505 15.665 5.83301V12.5C15.665 15.6287 13.1287 18.165 10 18.165C6.87131 18.165 4.33496 15.6287 4.33496 12.5Z"></path>
-                        </svg>
-                        <p className=" text-[13px] px-1 hidden [@media(min-width:510px)]:flex">
-                          Attach
-                        </p>
-                      </button>
-                    </Hover>
-                    <Hover text="Search the web">
-                      <button
-                        className="inline-flex items-center p-2 cursor-pointer rounded-full text-sm transition"
-                        style={{
-                          background: "var(--interactive-bg-secondary-default)",
-                          border:
-                            "1px solid var(--interactive-border-secondary-default)",
-                          color: "var(--interactive-label-secondary-default)",
-                        }}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="icon"
-                        >
-                          <path d="M10 2.125C14.3492 2.125 17.875 5.65076 17.875 10C17.875 14.3492 14.3492 17.875 10 17.875C5.65076 17.875 2.125 14.3492 2.125 10C2.125 5.65076 5.65076 2.125 10 2.125ZM7.88672 10.625C7.94334 12.3161 8.22547 13.8134 8.63965 14.9053C8.87263 15.5194 9.1351 15.9733 9.39453 16.2627C9.65437 16.5524 9.86039 16.625 10 16.625C10.1396 16.625 10.3456 16.5524 10.6055 16.2627C10.8649 15.9733 11.1274 15.5194 11.3604 14.9053C11.7745 13.8134 12.0567 12.3161 12.1133 10.625H7.88672ZM3.40527 10.625C3.65313 13.2734 5.45957 15.4667 7.89844 16.2822C7.7409 15.997 7.5977 15.6834 7.4707 15.3486C6.99415 14.0923 6.69362 12.439 6.63672 10.625H3.40527ZM13.3633 10.625C13.3064 12.439 13.0059 14.0923 12.5293 15.3486C12.4022 15.6836 12.2582 15.9969 12.1006 16.2822C14.5399 15.467 16.3468 13.2737 16.5947 10.625H13.3633ZM12.1006 3.7168C12.2584 4.00235 12.4021 4.31613 12.5293 4.65137C13.0059 5.90775 13.3064 7.56102 13.3633 9.375H16.5947C16.3468 6.72615 14.54 4.53199 12.1006 3.7168ZM10 3.375C9.86039 3.375 9.65437 3.44756 9.39453 3.7373C9.1351 4.02672 8.87263 4.48057 8.63965 5.09473C8.22547 6.18664 7.94334 7.68388 7.88672 9.375H12.1133C12.0567 7.68388 11.7745 6.18664 11.3604 5.09473C11.1274 4.48057 10.8649 4.02672 10.6055 3.7373C10.3456 3.44756 10.1396 3.375 10 3.375ZM7.89844 3.7168C5.45942 4.53222 3.65314 6.72647 3.40527 9.375H6.63672C6.69362 7.56102 6.99415 5.90775 7.4707 4.65137C7.59781 4.31629 7.74073 4.00224 7.89844 3.7168Z"></path>
-                        </svg>
-                        <p className=" text-[13px] px-1 hidden [@media(min-width:510px)]:flex">
-                          Search
-                        </p>
-                      </button>
-                    </Hover>
-                  </div>
-
-                  {/* Right voice */}
-                  <div className="flex items-center ">
-                    <Hover text="Use voice mode">
-                      <button
-                        className="inline-flex items-center p-2 hover:opacity-80 rounded-full text-sm bg-[var(--bg-tertiary)] cursor-pointer"
-                        style={{
-                          background: "",
-                          color: "var(--interactive-label-secondary-default)",
-                        }}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="icon"
-                        >
-                          <path d="M7.167 15.416V4.583a.75.75 0 0 1 1.5 0v10.833a.75.75 0 0 1-1.5 0Zm4.166-2.5V7.083a.75.75 0 0 1 1.5 0v5.833a.75.75 0 0 1-1.5 0ZM3 11.25V8.75a.75.75 0 0 1 1.5 0v2.5a.75.75 0 0 1-1.5 0Zm12.5 0V8.75a.75.75 0 0 1 1.5 0v2.5a.75.75 0 0 1-1.5 0Z"></path>
-                        </svg>
-                        <p className=" text-[13px] px-1 hidden [@media(min-width:510px)]:flex">
-                          Voice
-                        </p>
-                      </button>
-                    </Hover>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <GuestChat />
         </div>
         <div className=" px-3 p-1.5 text-sm">
           <p className="text-center text-[var(--text-secondary)] font-extralight text-sm">

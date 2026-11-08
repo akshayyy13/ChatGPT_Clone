@@ -53,19 +53,6 @@ export default function CollapsibleSidebar({
     mutate(`/api/threads?key=${sidebarKey}`);
   }, [sidebarKey]);
 
-  // Handle redirect when no threads exist (FIXED - no more NEXT_REDIRECT error)
-  useEffect(() => {
-    if (
-      !isLoading &&
-      pathname === "/chat" &&
-      data &&
-      data.threads.length === 0
-    ) {
-      // Use window.location instead of router.replace to avoid NEXT_REDIRECT error
-      window.location.href = "/chat/new";
-    }
-  }, [pathname, data, isLoading]);
-
   // Refresh the list when the window regains focus or becomes visible
   useEffect(() => {
     const onFocus = () => mutate(`/api/threads?key=${sidebarKey}`);

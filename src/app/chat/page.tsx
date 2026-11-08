@@ -27,7 +27,7 @@ export default function ChatIndex() {
       const handleChatRedirect = async () => {
         try {
           // Check for existing threads using your existing endpoint
-          const response = await fetch("/api/threads", {
+          const response = await fetch("/api/threads?includeEmpty=true", {
             credentials: "include",
           });
 

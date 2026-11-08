@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import type { Msg } from "@/app/types";
 import TopBar from "./components/TopBar";
@@ -40,21 +41,38 @@ export default function ChatView({
   const startInlineEdit = (id: string | null) => setEditMsgId(id);
   const cancelInlineEdit = () => setEditMsgId(null);
   const { refreshSidebar } = useThread();
+  const router = useRouter();
   async function handleDeleteThread() {
+    let deleted = false;
     try {
       const res = await fetch(`/api/threads/${threadId}`, {
         method: "DELETE",
       });
 
       if (!res.ok) throw new Error("Failed to delete thread");
+      deleted = true;
 
-      // Refresh sidebar immediately
       refreshSidebar();
 
-      // Use window.location instead of router.push to avoid NEXT_REDIRECT error
-      window.location.href = "/chat";
+      const threadsResponse = await fetch(`/api/threads?includeEmpty=true&afterDelete=${Date.now()}`, {
+        cache: "no-store",
+      });
+      if (!threadsResponse.ok) throw new Error("Failed to load remaining chats");
+
+      const { threads } = await threadsResponse.json();
+      if (Array.isArray(threads) && threads.length > 0) {
+        router.replace(`/chat/${threads[0]._id}`);
+        return;
+      }
+
+      const newThreadResponse = await fetch("/api/threads/new", { method: "POST" });
+      if (!newThreadResponse.ok) throw new Error("Failed to create a replacement chat");
+      const newThread = await newThreadResponse.json();
+      refreshSidebar();
+      router.replace(`/chat/${newThread.id}`);
     } catch (err) {
       console.error("Delete failed:", err);
+      if (deleted) router.push("/chat");
       alert("Failed to delete thread.");
     }
   }
@@ -209,7 +227,10 @@ export default function ChatView({
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) throw new Error("Failed to fetch AI response");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to fetch AI response");
+      }
 
       if (res.body) {
         const reader = res.body.getReader();
@@ -250,7 +271,10 @@ export default function ChatView({
           _id: `temp-${Date.now() + 2}-${Math.random()}`,
           role: "assistant",
           content: [
-            { type: "text", text: `Mock reply: ${text || "File uploaded"}` },
+            {
+              type: "text",
+              text: error instanceof Error ? `⚠️ ${error.message}` : "⚠️ The assistant could not reply. Please try again.",
+            },
           ],
         },
       ]);
