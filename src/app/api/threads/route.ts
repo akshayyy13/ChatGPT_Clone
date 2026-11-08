@@ -20,6 +20,7 @@ export const GET = auth(async function GET(req) {
     await dbConnect();
 
     const userId = req.auth.user.id;
+    const includeEmpty = new URL(req.url).searchParams.get("includeEmpty") === "true";
     const threads = await Thread.find({ userId })
       .sort({ updatedAt: -1 })
       .select({ _id: 1 })
@@ -64,7 +65,8 @@ export const GET = auth(async function GET(req) {
       .map((t) => ({
         _id: String(t._id),
         preview: previewByThread[String(t._id)] || "New chat",
-      }));
+      }))
+      .filter((thread) => includeEmpty || previewByThread[thread._id]);
 
     console.log("✅ Threads API success, returning", list.length, "threads");
     return NextResponse.json({ threads: list });

@@ -54,7 +54,7 @@ export default function ChatView({
 
       refreshSidebar();
 
-      const threadsResponse = await fetch(`/api/threads?afterDelete=${Date.now()}`, {
+      const threadsResponse = await fetch(`/api/threads?includeEmpty=true&afterDelete=${Date.now()}`, {
         cache: "no-store",
       });
       if (!threadsResponse.ok) throw new Error("Failed to load remaining chats");
